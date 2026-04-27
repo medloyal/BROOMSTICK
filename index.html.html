@@ -1,0 +1,2243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Broomstick — AI Caption Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --orange:#FF6B00;
+  --orange-hover:#FF8230;
+  --orange-pale:#FFF3E8;
+  --orange-mid:#FFE0C4;
+  --orange-border:rgba(255,107,0,0.18);
+  --white:#FFFFFF;
+  --off:#F5F5F7;
+  --bg:#F2F2F6;
+  --surface:rgba(255,255,255,0.9);
+  --border:rgba(0,0,0,0.08);
+  --border2:rgba(0,0,0,0.11);
+  --text:#1C1C1E;
+  --text2:#3A3A3C;
+  --muted:#6E6E73;
+  --muted2:#8E8E93;
+  --green:#34C759;
+  --shadow:0 1px 12px rgba(0,0,0,0.07),0 0.5px 3px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 24px rgba(0,0,0,0.1),0 1px 6px rgba(0,0,0,0.05);
+  --shadow-orange:0 4px 20px rgba(255,107,0,0.28);
+  --r:20px;--r-sm:14px;--r-xs:11px;
+  --font:'Plus Jakarta Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:4px;}
+::selection{background:rgba(255,107,0,0.16);}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:58px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+  background:rgba(242,242,246,0.82);
+  backdrop-filter:saturate(180%) blur(22px);
+  -webkit-backdrop-filter:saturate(180%) blur(22px);
+  border-bottom:0.5px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;letter-spacing:-0.025em;color:var(--text);}
+.nav-orb{
+  width:30px;height:30px;border-radius:9px;
+  background:linear-gradient(145deg,#FF8230,#FF6B00);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;box-shadow:var(--shadow-orange);
+}
+.nav-pill{
+  font-size:11px;font-weight:700;letter-spacing:0.05em;
+  padding:5px 13px;border-radius:20px;
+  background:var(--orange-pale);color:var(--orange);
+  border:1px solid var(--orange-border);
+}
+.nav-cta-btn{
+  padding:8px 18px;border-radius:20px;
+  background:var(--orange);color:#fff;
+  font-size:13px;font-weight:700;font-family:var(--font);
+  border:none;cursor:pointer;
+  box-shadow:var(--shadow-orange);transition:all 0.2s;
+}
+.nav-cta-btn:hover{background:var(--orange-hover);transform:translateY(-1px);}
+
+/* ── HERO ── */
+.hero{
+  padding:130px 24px 80px;text-align:center;position:relative;
+  overflow:hidden;min-height:90vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#fff 0%,var(--bg) 60%);
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 700px 500px at 60% 30%,rgba(255,107,0,0.07) 0%,transparent 70%),
+    radial-gradient(ellipse 500px 400px at 20% 70%,rgba(255,140,58,0.05) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-chip{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:7px 16px;border-radius:20px;
+  background:var(--orange-pale);border:1px solid var(--orange-border);
+  font-size:12px;font-weight:700;color:var(--orange);
+  margin-bottom:26px;
+  animation:fup .5s ease both;
+}
+.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:blink 2s ease infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+.hero-h1{
+  font-size:clamp(44px,7.5vw,84px);font-weight:800;
+  letter-spacing:-0.04em;line-height:1.03;
+  margin-bottom:20px;color:var(--text);
+  animation:fup .5s .07s ease both;
+}
+.hero-h1 span{color:var(--orange);}
+.hero-sub{
+  font-size:17px;color:var(--muted);font-weight:300;
+  max-width:460px;line-height:1.72;margin:0 auto 38px;
+  animation:fup .5s .14s ease both;
+}
+.hero-btns{display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;animation:fup .5s .21s ease both;}
+.btn-main{
+  padding:15px 30px;border-radius:var(--r-sm);
+  background:var(--orange);color:#fff;
+  font-size:15px;font-weight:800;font-family:var(--font);
+  border:none;cursor:pointer;box-shadow:var(--shadow-orange);
+  transition:all .22s;letter-spacing:-0.01em;
+}
+.btn-main:hover{background:var(--orange-hover);transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,107,0,0.38);}
+.btn-outline{
+  padding:15px 26px;border-radius:var(--r-sm);
+  background:var(--white);color:var(--text2);
+  font-size:15px;font-family:var(--font);
+  border:1px solid var(--border2);cursor:pointer;
+  box-shadow:var(--shadow);transition:all .2s;
+}
+.btn-outline:hover{border-color:var(--orange);color:var(--orange);}
+.kpi-row{
+  display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+  margin-top:52px;animation:fup .5s .28s ease both;
+}
+.kpi{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:15px 22px;
+  box-shadow:var(--shadow);text-align:center;
+}
+.kpi-v{font-size:25px;font-weight:800;letter-spacing:-0.03em;color:var(--text);}
+.kpi-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:3px;}
+@keyframes fup{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── FEATURES ── */
+.feats{padding:80px 24px;max-width:1020px;margin:0 auto;}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);font-weight:700;margin-bottom:10px;}
+.h2{font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-.03em;line-height:1.13;margin-bottom:12px;}
+.lead{font-size:15px;color:var(--muted);font-weight:300;max-width:440px;line-height:1.75;}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:12px;margin-top:44px;}
+.feat-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--r);padding:24px;box-shadow:var(--shadow);
+  transition:transform .2s,box-shadow .2s;
+}
+.feat-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
+.feat-ic{
+  width:44px;height:44px;border-radius:13px;
+  background:var(--orange-pale);border:1px solid var(--orange-border);
+  display:flex;align-items:center;justify-content:center;font-size:21px;margin-bottom:14px;
+}
+.feat-t{font-size:15px;font-weight:700;margin-bottom:6px;letter-spacing:-.01em;}
+.feat-d{font-size:13px;color:var(--muted);line-height:1.7;font-weight:300;}
+
+/* ── TOOL ── */
+#tool{background:var(--bg);padding:68px 24px 96px;border-top:1px solid var(--border);}
+.tool-wrap{max-width:700px;margin:0 auto;}
+.tool-head{text-align:center;margin-bottom:40px;}
+
+/* progress */
+.prog{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:40px;overflow-x:auto;padding-bottom:4px;}
+.pi{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.pd{
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;
+  border:1.5px solid var(--border2);background:var(--white);color:var(--muted);
+  transition:all .3s;box-shadow:var(--shadow);
+}
+.pd.on{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:var(--shadow-orange);}
+.pd.done{background:var(--green);border-color:var(--green);color:#fff;}
+.pl-lbl{font-size:12px;color:var(--muted);white-space:nowrap;font-weight:500;}
+.pl-lbl.on{color:var(--text);font-weight:700;}
+.pline{width:32px;height:1.5px;background:var(--border2);flex-shrink:0;margin:0 3px;border-radius:2px;}
+.pline.done{background:var(--green);}
+
+/* panels */
+.panel{display:none;animation:fup .28s ease both;}
+.panel.active{display:block;}
+
+/* iOS card */
+.ios-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px;}
+.ics{padding:18px 20px;border-bottom:1px solid var(--border);}
+.ics:last-child{border-bottom:none;}
+.ics-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);margin-bottom:12px;}
+
+/* form fields */
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.frow.one{grid-template-columns:1fr;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:12px;font-weight:600;color:var(--text2);}
+.field input,.field select,.field textarea{
+  font-family:var(--font);font-size:14px;
+  padding:10px 13px;border-radius:var(--r-xs);
+  border:1.5px solid var(--border2);background:var(--off);
+  color:var(--text);outline:none;
+  transition:border-color .18s,box-shadow .18s;-webkit-appearance:none;
+}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted2);}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,107,0,0.09);background:var(--white);
+}
+.field textarea{resize:vertical;min-height:76px;line-height:1.6;}
+.ch-count{font-size:11px;color:var(--muted2);text-align:right;margin-top:3px;}
+.ch-count.warn{color:#FF9F0A;}.ch-count.over{color:#FF3B30;}
+
+/* pills/chips */
+.pill-row{display:flex;gap:7px;flex-wrap:wrap;}
+.mpill,.plat,.tone-p{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:20px;
+  border:1.5px solid var(--border2);background:var(--off);
+  color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;
+  transition:all .17s;font-family:var(--font);
+}
+.mpill .ic{font-size:15px;}
+.mpill:hover,.plat:hover,.tone-p:hover{border-color:var(--orange);color:var(--orange);}
+.mpill.s,.plat.s,.tone-p.s{background:var(--orange-pale);border-color:var(--orange);color:var(--orange);font-weight:700;}
+
+/* generate btn */
+.btn-gen{
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,#FF7A1A,var(--orange));
+  color:#fff;border:none;border-radius:var(--r-sm);
+  font-size:15px;font-weight:800;font-family:var(--font);
+  cursor:pointer;letter-spacing:-.01em;
+  transition:all .22s;box-shadow:var(--shadow-orange);margin-top:4px;
+}
+.btn-gen:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,107,0,0.4);}
+.btn-gen:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+/* loading */
+.load-wrap{text-align:center;padding:56px 20px;}
+.ring{
+  width:48px;height:48px;
+  border:2.5px solid var(--orange-mid);border-top-color:var(--orange);
+  border-radius:50%;animation:spin .85s linear infinite;
+  margin:0 auto 22px;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.lt{font-size:19px;font-weight:800;letter-spacing:-.02em;margin-bottom:5px;}
+.ls-wrap{display:flex;flex-direction:column;gap:11px;max-width:320px;margin:24px auto 0;text-align:left;}
+.ls{display:flex;align-items:center;gap:11px;font-size:13px;color:var(--muted);font-weight:400;}
+.ld{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:var(--muted2);background:var(--white);transition:all .3s;
+}
+.ls.on .ld{border-color:var(--orange);color:var(--orange);}
+.ls.done .ld{background:var(--green);border-color:var(--green);color:#fff;}
+.ls.on>span{color:var(--text);font-weight:600;}
+
+/* results */
+.know-box{
+  display:flex;align-items:flex-start;gap:9px;
+  padding:12px 15px;border-radius:var(--r-xs);
+  background:rgba(52,199,89,.06);border:1.5px solid rgba(52,199,89,.2);
+  margin-bottom:14px;font-size:13px;color:var(--text2);line-height:1.65;
+}
+.know-ic{color:var(--green);flex-shrink:0;font-size:14px;margin-top:1px;}
+
+.rc-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);margin-bottom:12px;}
+.rc-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--orange);font-weight:800;margin-bottom:7px;}
+.rc-text{font-size:13px;color:var(--muted);line-height:1.75;margin-bottom:10px;font-weight:300;}
+.rc-tag{font-size:11px;padding:3px 11px;border-radius:20px;background:var(--orange-pale);border:1px solid var(--orange-border);color:var(--orange);font-weight:600;}
+
+.ins-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px;}
+.ins-tile{background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);padding:13px 15px;box-shadow:var(--shadow);}
+.ins-l{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;}
+.ins-v{font-size:16px;font-weight:800;letter-spacing:-.015em;color:var(--text);margin-bottom:3px;}
+.ins-d{font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* caption cards */
+.cap-list{display:flex;flex-direction:column;gap:13px;margin-bottom:14px;}
+.cap-card{
+  background:var(--white);border:1.5px solid var(--border2);
+  border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);
+  transition:border-color .2s,transform .2s,box-shadow .2s;
+}
+.cap-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.cap-card.sel{border-color:var(--orange);box-shadow:0 0 0 2.5px rgba(255,107,0,0.13),var(--shadow-md);}
+.cap-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 17px;background:var(--off);border-bottom:1px solid var(--border);
+}
+.cap-lft{display:flex;align-items:center;gap:9px;}
+.cap-num{
+  width:27px;height:27px;border-radius:50%;
+  background:linear-gradient(135deg,#FF7A1A,var(--orange));
+  color:#fff;font-size:11px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;box-shadow:0 2px 7px rgba(255,107,0,.3);
+}
+.cap-strat{font-size:13px;font-weight:700;color:var(--text);}
+.cap-rgt{display:flex;gap:6px;}
+.cc-btn{
+  padding:6px 13px;border-radius:20px;
+  font-size:12px;font-weight:700;font-family:var(--font);
+  border:1.5px solid var(--border2);background:var(--white);color:var(--muted);
+  cursor:pointer;transition:all .15s;
+}
+.cc-btn:hover{border-color:var(--orange);color:var(--orange);}
+.cc-btn.sel-btn{background:var(--orange);color:#fff;border-color:var(--orange);}
+.cc-btn.cp-done{color:var(--green);border-color:var(--green);}
+
+.cap-body{padding:17px 19px;}
+.cap-txt{font-size:14px;line-height:1.82;font-weight:300;color:var(--text);white-space:pre-wrap;margin-bottom:9px;}
+.cap-hash{font-size:13px;color:var(--orange);margin-bottom:12px;font-weight:600;}
+.cap-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+.cap-tag{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);}
+.cap-metrics{display:flex;gap:16px;flex-wrap:wrap;padding:11px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:11px;}
+.cm{display:flex;flex-direction:column;gap:2px;}
+.cm-v{font-size:15px;font-weight:800;letter-spacing:-.01em;color:var(--text);}
+.cm-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.cap-why{font-size:13px;color:var(--muted);line-height:1.65;}
+.cap-why strong{color:var(--text);font-weight:700;}
+.cap-links-wrap{margin-top:11px;padding-top:11px;border-top:1px solid var(--border);}
+.cl-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;font-weight:700;}
+.cl-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.cl-item:last-child{border-bottom:none;}
+.cl-ic{width:26px;height:26px;border-radius:8px;background:var(--orange-pale);border:1px solid var(--orange-border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px;}
+.cl-lnk-t{font-weight:700;color:var(--text2);margin-bottom:2px;}
+.cl-lnk-u{color:var(--orange);text-decoration:none;font-size:11px;word-break:break-all;}
+.cl-lnk-u:hover{text-decoration:underline;}
+.cl-desc{color:var(--muted);font-size:11px;margin-top:2px;}
+
+/* action bar */
+.act-bar{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:19px 21px;box-shadow:var(--shadow);}
+.ab-t{font-size:15px;font-weight:800;margin-bottom:4px;letter-spacing:-.01em;}
+.ab-s{font-size:13px;color:var(--muted);margin-bottom:14px;font-weight:300;}
+.ab-btns{display:flex;gap:9px;flex-wrap:wrap;}
+.ab-btn{
+  padding:10px 18px;border-radius:var(--r-xs);
+  font-size:13px;font-weight:700;font-family:var(--font);
+  cursor:pointer;transition:all .2s;
+  border:1.5px solid var(--border2);background:var(--off);color:var(--text2);
+}
+.ab-btn:hover{border-color:var(--orange);color:var(--orange);}
+.ab-btn.pri{background:linear-gradient(135deg,#FF7A1A,var(--orange));color:#fff;border:none;box-shadow:var(--shadow-orange);}
+.ab-btn.pri:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(255,107,0,.38);}
+.back-b{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--muted);font-weight:600;
+  background:none;border:none;cursor:pointer;
+  padding:0 0 18px;font-family:var(--font);transition:color .15s;
+}
+.back-b:hover{color:var(--orange);}
+
+/* ── CLIENT MESSAGE PANEL ── */
+.cn-wrap{
+  background:var(--white);border:1.5px solid var(--border2);
+  border-radius:var(--r);padding:28px 24px;
+  box-shadow:var(--shadow);margin-bottom:14px;text-align:center;
+}
+.cn-emoji{font-size:40px;margin-bottom:14px;}
+.cn-t{font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px;}
+.cn-s{font-size:14px;color:var(--muted);margin-bottom:22px;font-weight:300;line-height:1.6;}
+.cn-row{display:flex;gap:9px;max-width:420px;margin:0 auto;}
+.cn-inp{
+  flex:1;font-family:var(--font);font-size:15px;
+  padding:12px 15px;border-radius:var(--r-xs);
+  border:1.5px solid var(--border2);background:var(--off);
+  color:var(--text);outline:none;
+  transition:border-color .18s,box-shadow .18s;
+}
+.cn-inp:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,107,0,.1);background:var(--white);}
+.cn-go{
+  padding:12px 20px;border-radius:var(--r-xs);
+  background:var(--orange);color:#fff;
+  font-size:14px;font-weight:800;font-family:var(--font);
+  border:none;cursor:pointer;box-shadow:var(--shadow-orange);
+  transition:all .2s;white-space:nowrap;
+}
+.cn-go:hover{background:var(--orange-hover);}
+
+/* message card */
+.msg-card{background:var(--white);border:1.5px solid var(--border2);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-md);margin-bottom:14px;}
+.msg-hd{
+  padding:18px 22px;
+  background:linear-gradient(135deg,#FF7A1A,var(--orange));color:#fff;
+}
+.msg-hd-ey{font-size:10px;opacity:.8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;font-weight:700;}
+.msg-hd-t{font-size:17px;font-weight:800;letter-spacing:-.01em;}
+.msg-hd-s{font-size:12px;opacity:.75;margin-top:3px;}
+.msg-bd{padding:22px;}
+.msg-txt{font-size:14px;line-height:1.85;color:var(--text);font-weight:300;white-space:pre-wrap;}
+.msg-cap-blk{
+  background:var(--off);border:1.5px solid var(--border2);
+  border-radius:var(--r-xs);padding:15px;margin:14px 0;
+  font-size:14px;line-height:1.8;color:var(--text);font-weight:300;white-space:pre-wrap;
+}
+.msg-hash{color:var(--orange);font-size:13px;font-weight:700;margin-top:8px;}
+.msg-rat{
+  background:var(--orange-pale);border:1px solid var(--orange-border);
+  border-radius:var(--r-xs);padding:15px;margin:13px 0;
+  font-size:13px;line-height:1.75;color:var(--text2);
+}
+.msg-rat strong{color:var(--orange);}
+.rat-stats{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;}
+.rs-item span:first-child{font-size:15px;font-weight:800;color:var(--orange);display:block;}
+.rs-item span:last-child{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.msg-links{margin:13px 0;}
+.ml-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:9px;}
+.ml-item{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.ml-item:last-child{border-bottom:none;}
+.ml-ic{width:28px;height:28px;border-radius:9px;background:var(--orange-pale);border:1px solid var(--orange-border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px;}
+.ml-lbl{font-weight:700;color:var(--text2);margin-bottom:2px;}
+.ml-url{color:var(--orange);text-decoration:none;word-break:break-all;font-size:11px;}
+.ml-url:hover{text-decoration:underline;}
+.ml-desc{color:var(--muted);font-size:11px;margin-top:2px;}
+.msg-ft{
+  padding:13px 22px;background:var(--off);border-top:1px solid var(--border);
+  font-size:11px;color:var(--muted);text-align:center;line-height:1.6;
+}
+
+.act-row{display:flex;gap:9px;flex-wrap:wrap;}
+
+/* toast */
+.toast{
+  position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:var(--text);color:#fff;
+  border-radius:12px;padding:10px 22px;
+  font-size:13px;font-weight:600;box-shadow:var(--shadow-md);
+  z-index:9999;opacity:0;transition:all .24s;
+  pointer-events:none;white-space:nowrap;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* footer */
+footer{padding:42px 24px;text-align:center;border-top:1px solid var(--border);background:var(--white);}
+.ft-logo{display:inline-flex;align-items:center;gap:8px;font-size:16px;font-weight:800;margin-bottom:7px;}
+.ft-s{font-size:13px;color:var(--muted);margin-bottom:14px;}
+.ft-c{font-size:11px;color:var(--muted2);}
+
+/* ── CLIENT MEMORY ── */
+.client-db-wrap{margin-bottom:14px;}
+.client-db-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.client-db-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);}
+.client-db-count{font-size:11px;color:var(--muted);font-weight:500;}
+
+.client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:9px;margin-bottom:10px;}
+.client-card{
+  background:var(--white);border:1.5px solid var(--border2);
+  border-radius:var(--r-sm);padding:13px 14px;
+  cursor:pointer;transition:all .18s;position:relative;
+  box-shadow:var(--shadow);
+}
+.client-card:hover{border-color:var(--orange);transform:translateY(-1px);box-shadow:var(--shadow-md);}
+.client-card.active-client{border-color:var(--orange);background:var(--orange-pale);box-shadow:0 0 0 2px rgba(255,107,0,0.12),var(--shadow);}
+.cc-avatar{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--orange-pale),var(--orange-mid));
+  border:1px solid var(--orange-border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;color:var(--orange);
+  margin-bottom:9px;
+}
+.cc-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cc-brand{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cc-plats{font-size:10px;color:var(--muted2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cc-del{
+  position:absolute;top:8px;right:8px;
+  width:18px;height:18px;border-radius:50%;
+  background:rgba(0,0,0,0.06);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:var(--muted2);opacity:0;transition:opacity .15s;
+  font-family:var(--font);
+}
+.client-card:hover .cc-del{opacity:1;}
+.cc-del:hover{background:rgba(255,59,48,.12);color:#FF3B30;}
+
+.new-client-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:11px;border-radius:var(--r-sm);
+  border:1.5px dashed var(--border2);background:transparent;
+  color:var(--muted);font-size:13px;font-weight:600;font-family:var(--font);
+  cursor:pointer;transition:all .18s;
+}
+.new-client-btn:hover{border-color:var(--orange);color:var(--orange);background:var(--orange-pale);}
+
+.client-loaded-banner{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 14px;border-radius:var(--r-xs);
+  background:rgba(52,199,89,.06);border:1.5px solid rgba(52,199,89,.2);
+  margin-bottom:14px;font-size:13px;color:var(--text2);
+}
+.clb-icon{font-size:16px;flex-shrink:0;}
+.clb-txt{flex:1;line-height:1.5;}
+.clb-txt strong{font-weight:700;color:var(--text);}
+.clb-clear{
+  font-size:12px;font-weight:700;color:var(--muted);
+  background:none;border:none;cursor:pointer;font-family:var(--font);
+  padding:4px 8px;border-radius:8px;transition:all .15s;
+}
+.clb-clear:hover{color:#FF3B30;background:rgba(255,59,48,.06);}
+
+.save-client-row{
+  display:flex;align-items:center;gap:9px;
+  padding:13px 14px;border-radius:var(--r-xs);
+  background:var(--orange-pale);border:1px solid var(--orange-border);
+  margin-top:12px;
+}
+.save-client-row label{font-size:13px;color:var(--text2);font-weight:500;flex:1;}
+.save-toggle{
+  position:relative;width:44px;height:26px;flex-shrink:0;cursor:pointer;
+}
+.save-toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{
+  position:absolute;inset:0;border-radius:13px;
+  background:var(--border2);transition:background .2s;
+}
+.save-toggle input:checked + .toggle-track{background:var(--orange);}
+.toggle-thumb{
+  position:absolute;top:3px;left:3px;
+  width:20px;height:20px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);
+  transition:transform .2s;
+}
+.save-toggle input:checked ~ .toggle-thumb{transform:translateX(18px);}
+
+/* ── DISLIKES ── */
+.dislike-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+.dislike-chip{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:20px;
+  border:1.5px solid var(--border2);background:var(--off);
+  color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;
+  transition:all .17s;font-family:var(--font);
+  user-select:none;
+}
+.dislike-chip:hover{border-color:#FF3B30;color:#FF3B30;}
+.dislike-chip.s{background:rgba(255,59,48,0.07);border-color:#FF3B30;color:#FF3B30;font-weight:700;}
+.dislike-chip .dc-em{font-size:15px;}
+.dislike-custom-row{display:flex;gap:8px;margin-top:10px;}
+.dislike-custom-inp{
+  flex:1;font-family:var(--font);font-size:13px;
+  padding:9px 13px;border-radius:20px;
+  border:1.5px solid var(--border2);background:var(--off);
+  color:var(--text);outline:none;
+  transition:border-color .18s;
+}
+.dislike-custom-inp:focus{border-color:#FF3B30;box-shadow:0 0 0 3px rgba(255,59,48,0.08);background:var(--white);}
+.dislike-custom-inp::placeholder{color:var(--muted2);}
+.dislike-add-btn{
+  padding:9px 16px;border-radius:20px;
+  border:1.5px solid var(--border2);background:var(--off);
+  color:var(--muted);font-size:13px;font-weight:700;font-family:var(--font);
+  cursor:pointer;transition:all .17s;white-space:nowrap;
+}
+.dislike-add-btn:hover{border-color:#FF3B30;color:#FF3B30;}
+.dislike-note{
+  font-size:12px;color:var(--muted2);
+  margin-top:8px;line-height:1.5;
+  display:flex;align-items:flex-start;gap:6px;
+}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{
+  border:2px dashed var(--border2);
+  border-radius:var(--r-sm);
+  background:var(--off);
+  padding:28px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+  overflow:hidden;
+}
+.upload-zone:hover,.upload-zone.drag-over{
+  border-color:var(--orange);
+  background:var(--orange-pale);
+}
+.upload-zone input[type=file]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
+}
+.uz-icon{font-size:32px;margin-bottom:10px;}
+.uz-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.uz-sub{font-size:12px;color:var(--muted);line-height:1.5;}
+.uz-types{
+  display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px;
+}
+.uz-type{
+  font-size:10px;font-weight:700;letter-spacing:.05em;
+  padding:3px 10px;border-radius:20px;
+  background:var(--white);border:1px solid var(--border2);color:var(--muted);
+}
+
+/* preview grid */
+.upload-previews{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+  gap:9px;margin-top:12px;
+}
+.preview-item{
+  position:relative;border-radius:var(--r-xs);overflow:hidden;
+  aspect-ratio:1;background:var(--bg2);
+  border:1px solid var(--border2);
+}
+.preview-item img{width:100%;height:100%;object-fit:cover;display:block;}
+.preview-item .pv-del{
+  position:absolute;top:5px;right:5px;
+  width:20px;height:20px;border-radius:50%;
+  background:rgba(0,0,0,0.55);color:#fff;border:none;
+  font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.preview-item .pv-del:hover{background:rgba(255,59,48,.85);}
+.preview-item .pv-type{
+  position:absolute;bottom:5px;left:5px;
+  font-size:9px;font-weight:800;letter-spacing:.05em;
+  padding:2px 7px;border-radius:8px;
+  background:rgba(0,0,0,0.55);color:#fff;
+  text-transform:uppercase;
+}
+.preview-item .pv-video-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.3);font-size:24px;
+}
+
+/* analysis badge */
+.media-analysis-box{
+  margin-top:10px;padding:12px 14px;border-radius:var(--r-xs);
+  background:rgba(52,199,89,.06);border:1.5px solid rgba(52,199,89,.18);
+  font-size:12px;color:var(--text2);line-height:1.65;display:none;
+}
+.mab-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:5px;}
+
+/* ── HISTORY PANEL ── */
+.hist-wrap{margin-bottom:16px;}
+.hist-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.hist-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--text2);}
+.hist-count{font-size:11px;color:var(--muted);font-weight:500;}
+.hist-list{display:flex;flex-direction:column;gap:8px;}
+.hist-item{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:12px 14px;cursor:pointer;transition:all .18s;box-shadow:var(--shadow);
+  position:relative;
+}
+.hist-item:hover{border-color:var(--orange);transform:translateY(-1px);box-shadow:var(--shadow-md);}
+.hi-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.hi-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.hi-date{font-size:11px;color:var(--muted);font-weight:500;}
+.hi-platform{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;background:var(--orange-pale);border:1px solid var(--orange-border);color:var(--orange);}
+.hi-status{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;}
+.hi-status.approved{background:rgba(52,199,89,.1);border:1px solid rgba(52,199,89,.25);color:var(--green);}
+.hi-status.pending{background:rgba(255,159,10,.1);border:1px solid rgba(255,159,10,.25);color:#FF9F0A;}
+.hi-status.revision{background:rgba(255,59,48,.07);border:1px solid rgba(255,59,48,.2);color:#FF3B30;}
+.hi-status.sent{background:rgba(0,122,255,.08);border:1px solid rgba(0,122,255,.2);color:#007AFF;}
+.hi-strategy{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.hi-preview{font-size:12px;color:var(--muted);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.hi-del{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.06);border:none;cursor:pointer;font-size:9px;color:var(--muted2);opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center;font-family:var(--font);}
+.hist-item:hover .hi-del{opacity:1;}
+.hi-del:hover{background:rgba(255,59,48,.12);color:#FF3B30;}
+.hist-empty{text-align:center;padding:20px;font-size:13px;color:var(--muted2);font-weight:300;}
+.hist-show-all{width:100%;padding:9px;border-radius:var(--r-xs);border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:12px;font-weight:600;font-family:var(--font);cursor:pointer;margin-top:6px;transition:all .18s;}
+.hist-show-all:hover{border-color:var(--orange);color:var(--orange);}
+
+/* ── STATUS TRACKER ── */
+.status-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:11px 14px;border-radius:var(--r-xs);
+  background:var(--off);border:1.5px solid var(--border2);
+  margin-top:10px;
+}
+.status-bar label{font-size:13px;color:var(--text2);font-weight:500;flex:1;}
+.status-select{
+  font-family:var(--font);font-size:12px;font-weight:700;
+  padding:5px 11px;border-radius:20px;border:1.5px solid var(--border2);
+  background:var(--white);color:var(--text);cursor:pointer;outline:none;
+  transition:all .18s;-webkit-appearance:none;
+}
+.status-select:focus{border-color:var(--orange);}
+
+/* ── REVISION MODE ── */
+.revision-box{
+  background:var(--off);border:1.5px solid var(--border2);
+  border-radius:var(--r-sm);padding:16px;margin-top:12px;
+  display:none;
+}
+.revision-box.open{display:block;}
+.rev-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--orange);margin-bottom:8px;}
+.rev-row{display:flex;gap:8px;}
+.rev-inp{
+  flex:1;font-family:var(--font);font-size:13px;
+  padding:10px 13px;border-radius:var(--r-xs);
+  border:1.5px solid var(--border2);background:var(--white);
+  color:var(--text);outline:none;resize:none;min-height:60px;line-height:1.5;
+  transition:border-color .18s;
+}
+.rev-inp:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,107,0,.09);}
+.rev-btn{
+  padding:10px 16px;border-radius:var(--r-xs);
+  background:var(--orange);color:#fff;border:none;
+  font-size:13px;font-weight:700;font-family:var(--font);
+  cursor:pointer;align-self:flex-end;white-space:nowrap;
+  box-shadow:var(--shadow-orange);transition:all .2s;
+}
+.rev-btn:hover{background:var(--orange-hover);}
+.rev-loading{display:none;font-size:12px;color:var(--muted);padding:8px 0;text-align:center;}
+
+/* ── BRAND VOICE PROFILE ── */
+.voice-profile-wrap{
+  background:var(--off);border:1.5px dashed var(--border2);
+  border-radius:var(--r-sm);padding:14px 16px;margin-top:12px;
+}
+.vp-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--text2);margin-bottom:6px;}
+.vp-desc{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+.vp-inp{
+  width:100%;font-family:var(--font);font-size:13px;
+  padding:10px 13px;border-radius:var(--r-xs);
+  border:1.5px solid var(--border2);background:var(--white);
+  color:var(--text);outline:none;resize:vertical;min-height:72px;line-height:1.6;
+  transition:border-color .18s;
+}
+.vp-inp:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,107,0,.09);}
+.vp-examples-label{font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:6px;font-weight:600;}
+.vp-example-item{
+  display:flex;align-items:flex-start;gap:7px;
+  padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;
+}
+.vp-example-item:last-child{border-bottom:none;}
+.vp-add-row{display:flex;gap:7px;margin-top:10px;}
+.vp-add-inp{
+  flex:1;font-family:var(--font);font-size:13px;
+  padding:9px 13px;border-radius:var(--r-xs);
+  border:1.5px solid var(--border2);background:var(--white);
+  color:var(--text);outline:none;
+  transition:border-color .18s;
+}
+.vp-add-inp:focus{border-color:var(--orange);}
+.vp-add-btn{
+  padding:9px 14px;border-radius:var(--r-xs);
+  border:1.5px solid var(--border2);background:var(--off);
+  color:var(--muted);font-size:13px;font-weight:700;font-family:var(--font);
+  cursor:pointer;transition:all .18s;white-space:nowrap;
+}
+.vp-add-btn:hover{border-color:var(--orange);color:var(--orange);}
+
+/* ── PERFORMANCE FEEDBACK ── */
+.perf-wrap{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:14px 16px;
+  margin-top:10px;display:none;
+}
+.perf-wrap.open{display:block;}
+.perf-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--orange);margin-bottom:8px;}
+.perf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.perf-field{display:flex;flex-direction:column;gap:4px;}
+.perf-field label{font-size:11px;color:var(--muted);font-weight:600;}
+.perf-inp{
+  font-family:var(--font);font-size:13px;font-weight:700;
+  padding:8px 10px;border-radius:var(--r-xs);
+  border:1.5px solid var(--border2);background:var(--off);
+  color:var(--text);outline:none;text-align:center;
+  transition:border-color .18s;
+}
+.perf-inp:focus{border-color:var(--orange);}
+
+/* ── SCHEDULER LINK ── */
+.scheduler-wrap{
+  display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;
+}
+.sched-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:9px 16px;border-radius:var(--r-xs);
+  border:1.5px solid var(--border2);background:var(--white);
+  color:var(--text2);font-size:13px;font-weight:600;font-family:var(--font);
+  cursor:pointer;transition:all .18s;box-shadow:var(--shadow);
+  text-decoration:none;
+}
+.sched-btn:hover{border-color:var(--orange);color:var(--orange);}
+.sched-ic{font-size:15px;}
+
+/* ── CLIENT HISTORY TAB in results ── */
+.res-tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:1.5px solid var(--border);}
+.res-tab{
+  padding:10px 18px;font-size:13px;font-weight:700;color:var(--muted);
+  cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;
+  transition:all .18s;font-family:var(--font);background:none;border-top:none;border-left:none;border-right:none;
+}
+.res-tab.on{color:var(--orange);border-bottom-color:var(--orange);}
+.res-tab-panel{display:none;}
+.res-tab-panel.on{display:block;}
+
+/* ── LANG MESSAGE TOGGLE ── */
+.msg-lang-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.msg-lang-row label{font-size:13px;color:var(--text2);font-weight:500;}
+.msg-lang-sel{
+  font-family:var(--font);font-size:13px;font-weight:600;
+  padding:7px 14px;border-radius:20px;
+  border:1.5px solid var(--border2);background:var(--white);
+  color:var(--text);cursor:pointer;outline:none;-webkit-appearance:none;
+}
+.msg-lang-sel:focus{border-color:var(--orange);}
+
+/* responsive */
+@media(max-width:580px){
+  .frow{grid-template-columns:1fr;}
+  .ins-row{grid-template-columns:1fr;}
+  .hero-h1{font-size:38px;}
+  .hero{padding:110px 20px 60px;}
+  .cn-row{flex-direction:column;}
+  nav{padding:0 16px;}
+  .msg-bd{padding:16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-orb">✦</div>
+    Broomstick
+  </div>
+  <div style="display:flex;align-items:center;gap:9px;">
+    <div class="nav-pill">AI-Powered</div>
+    <button class="nav-cta-btn" style="background:var(--off);color:var(--text2);border:1px solid var(--border2);box-shadow:none;" onclick="openTeamPanel()" title="Team Workspace">👥 Team</button>
+    <button class="nav-cta-btn" onclick="document.getElementById('tool').scrollIntoView({behavior:'smooth'})">Try Free</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-chip"><div class="chip-dot"></div>Research-backed · Client-ready</div>
+  <h1 class="hero-h1">Captions your clients<br/><span>approve faster.</span></h1>
+  <p class="hero-sub">AI-researched social media captions — 3 strategic options, competitive intelligence, and a personalised client message in one click.</p>
+  <div class="hero-btns">
+    <button class="btn-main" onclick="document.getElementById('tool').scrollIntoView({behavior:'smooth'})">Generate Captions →</button>
+    <button class="btn-outline" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">How it works</button>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-v">3</div><div class="kpi-l">Options</div></div>
+    <div class="kpi"><div class="kpi-v">AI</div><div class="kpi-l">Research</div></div>
+    <div class="kpi"><div class="kpi-v">6+</div><div class="kpi-l">Platforms</div></div>
+    <div class="kpi"><div class="kpi-v">1-click</div><div class="kpi-l">Client Export</div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="feats" id="features">
+  <div class="eyebrow">How it works</div>
+  <div class="h2">Every caption earns its place.</div>
+  <p class="lead">Real competitive research turned into captions your client will confidently approve — with a personalised message to back them up.</p>
+  <div class="feat-grid">
+    <div class="feat-card"><div class="feat-ic">🔍</div><div class="feat-t">Deep Brand Research</div><div class="feat-d">Analyzes your brand, niche, and what's working for competitors before writing anything.</div></div>
+    <div class="feat-card"><div class="feat-ic">📊</div><div class="feat-t">Analytics-Backed</div><div class="feat-d">Each caption includes engagement estimates, confidence score, and strategic rationale.</div></div>
+    <div class="feat-card"><div class="feat-ic">✦</div><div class="feat-t">3 Distinct Strategies</div><div class="feat-d">Three unique angles — different hooks, structures, tones. Real choices, not minor variations.</div></div>
+    <div class="feat-card"><div class="feat-ic">💬</div><div class="feat-t">Client Approval Message</div><div class="feat-d">A personalised, professionally-written message for your client — with links to prove why it works.</div></div>
+    <div class="feat-card"><div class="feat-ic">🌍</div><div class="feat-t">Multilingual</div><div class="feat-d">English, Arabic, bilingual EN+AR, French, Spanish — captions and messages adapt automatically.</div></div>
+    <div class="feat-card"><div class="feat-ic">⚡</div><div class="feat-t">Platform-Native</div><div class="feat-d">Tuned to each platform's character limits, hashtag norms, and algorithm preferences.</div></div>
+  </div>
+</section>
+
+<!-- TOOL -->
+<section id="tool">
+  <div class="tool-wrap">
+    <div class="tool-head">
+      <div class="eyebrow">The Generator</div>
+      <div class="h2" style="font-size:26px;">Generate your captions</div>
+      <p style="font-size:14px;color:var(--muted);font-weight:300;margin-top:8px;">More detail = sharper output.</p>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="prog" id="prog">
+      <div class="pi"><div class="pd on" id="d1">1</div><span class="pl-lbl on" id="l1">Brief</span></div>
+      <div class="pline" id="pl1"></div>
+      <div class="pi"><div class="pd" id="d2">2</div><span class="pl-lbl" id="l2">Research</span></div>
+      <div class="pline" id="pl2"></div>
+      <div class="pi"><div class="pd" id="d3">3</div><span class="pl-lbl" id="l3">Captions</span></div>
+      <div class="pline" id="pl3"></div>
+      <div class="pi"><div class="pd" id="d4">4</div><span class="pl-lbl" id="l4">Message</span></div>
+    </div>
+
+    <!-- PANEL 1 -->
+    <div class="panel active" id="p1">
+
+      <!-- CLIENT MEMORY PICKER -->
+      <div class="client-db-wrap" id="clientDbWrap">
+        <div class="client-db-header">
+          <div class="client-db-title">🧹 Your Clients</div>
+          <div class="client-db-count" id="clientDbCount">0 saved</div>
+        </div>
+        <div class="client-grid" id="clientGrid"></div>
+        <button class="new-client-btn" onclick="startNewClient()">+ New Client</button>
+      </div>
+
+      <!-- LOADED CLIENT BANNER -->
+      <div class="client-loaded-banner" id="clientLoadedBanner" style="display:none;">
+        <span class="clb-icon">✓</span>
+        <span class="clb-txt"><strong id="clbName"></strong>'s profile loaded — all their preferences are pre-filled below.</span>
+        <button class="clb-clear" onclick="clearLoadedClient()">Clear ✕</button>
+      </div>
+
+      <div class="ios-card">
+        <div class="ics">
+          <div class="ics-label">Brand / Event</div>
+          <div class="frow">
+            <div class="field"><label>Brand or Account Name *</label><input id="bName" type="text" placeholder="e.g. Nike, Expo City Dubai…"/></div>
+            <div class="field"><label>Event Name (optional)</label><input id="eName" type="text" placeholder="e.g. Summer Drop 2025…"/></div>
+          </div>
+          <div class="frow one" style="margin-top:11px;">
+            <div class="field"><label>Brief / Context</label><textarea id="bText" placeholder="Describe the post purpose, key message, product or campaign…"></textarea></div>
+          </div>
+
+          <!-- BRAND VOICE PROFILE -->
+          <div class="voice-profile-wrap" style="margin-top:14px;">
+            <div class="vp-title">🎨 Brand Voice Profile</div>
+            <div class="vp-desc">Describe this brand's personality in your own words — tone, style, what makes them unique. The more specific, the more on-brand the captions.</div>
+            <textarea class="vp-inp" id="voiceProfile" placeholder="e.g. Confident, never arrogant. Speaks like a trusted friend, not a salesperson. Never uses buzzwords. Always punchy and direct."></textarea>
+            <div id="approvedExList"></div>
+            <div class="vp-examples-label">📌 Approved captions (paste past winners — the AI learns from them)</div>
+            <div class="vp-add-row">
+              <input class="vp-add-inp" id="vpExInp" type="text" placeholder="Paste an approved caption example…"/>
+              <button class="vp-add-btn" onclick="addVoiceExample()">+ Add</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ics">
+          <div class="ics-label">📎 Upload Your Design or Video</div>
+          <div style="font-size:13px;color:var(--muted);font-weight:300;margin-bottom:12px;line-height:1.6;">
+            Upload the image(s) or video you're writing the caption for. The AI will <strong style="color:var(--text);font-weight:600;">visually analyse</strong> your content and use it to write captions that match exactly what's in the design. 👀
+          </div>
+
+          <div class="upload-zone" id="uploadZone"
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="handleDrop(event)">
+            <input type="file" id="fileInput" accept="image/*,video/*" multiple onchange="handleFiles(this.files)"/>
+            <div class="uz-icon">🖼</div>
+            <div class="uz-title">Drop your design or video here</div>
+            <div class="uz-sub">or click to browse your files</div>
+            <div class="uz-types">
+              <span class="uz-type">JPG</span>
+              <span class="uz-type">PNG</span>
+              <span class="uz-type">WEBP</span>
+              <span class="uz-type">GIF</span>
+              <span class="uz-type">MP4</span>
+              <span class="uz-type">MOV</span>
+            </div>
+          </div>
+
+          <div class="upload-previews" id="uploadPreviews"></div>
+
+          <div class="media-analysis-box" id="mediaAnalysisBox">
+            <div class="mab-lbl">✓ Visual Analysis Ready</div>
+            <div id="mediaAnalysisText"></div>
+          </div>
+        </div>
+          <div class="pill-row">
+            <div class="mpill" onclick="pickMedia('Image',this)"><span class="ic">🖼</span>Image</div>
+            <div class="mpill" onclick="pickMedia('Carousel',this)"><span class="ic">🗂</span>Carousel</div>
+            <div class="mpill" onclick="pickMedia('Video / Reel',this)"><span class="ic">🎬</span>Video / Reel</div>
+            <div class="mpill" onclick="pickMedia('Story',this)"><span class="ic">◻</span>Story</div>
+            <div class="mpill" onclick="pickMedia('Static Post',this)"><span class="ic">📌</span>Static</div>
+          </div>
+        </div>
+        <div class="ics">
+          <div class="ics-label">Platform(s) *</div>
+          <div class="pill-row">
+            <div class="plat" onclick="togP(this,'Instagram')">📸 Instagram</div>
+            <div class="plat" onclick="togP(this,'LinkedIn')">💼 LinkedIn</div>
+            <div class="plat" onclick="togP(this,'TikTok')">🎵 TikTok</div>
+            <div class="plat" onclick="togP(this,'X / Twitter')">𝕏 X / Twitter</div>
+            <div class="plat" onclick="togP(this,'Facebook')">👥 Facebook</div>
+            <div class="plat" onclick="togP(this,'Threads')">🧵 Threads</div>
+            <div class="plat" onclick="togP(this,'YouTube')">▶ YouTube</div>
+          </div>
+        </div>
+        <div class="ics">
+          <div class="ics-label">Voice & Tone *</div>
+          <div class="pill-row">
+            <div class="tone-p" onclick="togT(this)">Bold & Confident</div>
+            <div class="tone-p" onclick="togT(this)">Playful & Fun</div>
+            <div class="tone-p" onclick="togT(this)">Inspirational</div>
+            <div class="tone-p" onclick="togT(this)">Luxurious</div>
+            <div class="tone-p" onclick="togT(this)">Informative</div>
+            <div class="tone-p" onclick="togT(this)">Emotional</div>
+            <div class="tone-p" onclick="togT(this)">Witty & Clever</div>
+            <div class="tone-p" onclick="togT(this)">Urgent / FOMO</div>
+            <div class="tone-p" onclick="togT(this)">Conversational</div>
+            <div class="tone-p" onclick="togT(this)">Professional</div>
+            <div class="tone-p" onclick="togT(this)">Minimalist</div>
+            <div class="tone-p" onclick="togT(this)">Storytelling</div>
+          </div>
+        </div>
+        <div class="ics">
+          <div class="ics-label">Settings</div>
+          <div class="frow">
+            <div class="field"><label>Language</label>
+              <select id="lang">
+                <option value="English">English</option>
+                <option value="Arabic">Arabic (العربية)</option>
+                <option value="English + Arabic">Bilingual (EN + AR)</option>
+                <option value="French">French</option>
+                <option value="Spanish">Spanish</option>
+              </select>
+            </div>
+            <div class="field"><label>Caption Goal</label>
+              <select id="goal">
+                <option value="Engagement">Drive Engagement</option>
+                <option value="Awareness">Brand Awareness</option>
+                <option value="Conversions">Drive Conversions</option>
+                <option value="Reach">Maximize Reach</option>
+                <option value="Community">Build Community</option>
+                <option value="Traffic">Drive Traffic</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow one" style="margin-top:11px;">
+            <div class="field"><label>Additional Instructions (optional)</label>
+              <textarea id="extra" placeholder="e.g. avoid emojis, include @handle, max 100 chars, no hard sell…"></textarea>
+              <div class="ch-count" id="cc">0 chars</div>
+            </div>
+          </div>
+        </div>
+        <div class="ics">
+          <div class="ics-label" style="color:#FF3B30;">🚫 Client's Red Flags</div>
+          <div style="font-size:13px;color:var(--muted);font-weight:300;margin-bottom:13px;line-height:1.6;">
+            What does your client <em>absolutely, positively, under no circumstances</em> want to see? Select all that apply — the AI will make sure to avoid every single one. 😅
+          </div>
+          <div class="dislike-wrap" id="dislikeWrap">
+            <div class="dislike-chip" onclick="togD(this,'Emojis in captions')"><span class="dc-em">😵</span>Emojis (they're allergic)</div>
+            <div class="dislike-chip" onclick="togD(this,'Hard selling or pushy CTAs')"><span class="dc-em">🛒</span>Hard selling</div>
+            <div class="dislike-chip" onclick="togD(this,'Hashtag overload (10+ tags)')"><span class="dc-em">#️⃣</span>Hashtag overload</div>
+            <div class="dislike-chip" onclick="togD(this,'Slang or informal language')"><span class="dc-em">🤙</span>Slang / informal</div>
+            <div class="dislike-chip" onclick="togD(this,'Long captions (keep it short!)')"><span class="dc-em">📜</span>Long captions</div>
+            <div class="dislike-chip" onclick="togD(this,'Corporate or stiff language')"><span class="dc-em">🤵</span>Corporate speak</div>
+            <div class="dislike-chip" onclick="togD(this,'Mentioning competitors')"><span class="dc-em">👀</span>Mentioning rivals</div>
+            <div class="dislike-chip" onclick="togD(this,'Discount or price-focused language')"><span class="dc-em">💸</span>Price talk</div>
+            <div class="dislike-chip" onclick="togD(this,'Clickbait-style hooks')"><span class="dc-em">🎣</span>Clickbait hooks</div>
+            <div class="dislike-chip" onclick="togD(this,'Questions directed at the audience')"><span class="dc-em">❓</span>Audience questions</div>
+            <div class="dislike-chip" onclick="togD(this,'Generic phrases like "We are excited to…"')"><span class="dc-em">😴</span>"We are excited to…"</div>
+            <div class="dislike-chip" onclick="togD(this,'Excessive exclamation marks!!!')"><span class="dc-em">❗</span>Exclamation overload!!!</div>
+          </div>
+          <div class="dislike-custom-row">
+            <input class="dislike-custom-inp" id="dislikeCustom" type="text" placeholder="Add your own… e.g. 'the word synergy', 'anything before 9am energy'"/>
+            <button class="dislike-add-btn" onclick="addCustomDislike()">+ Add</button>
+          </div>
+          <div class="dislike-note">
+            <span>💡</span>
+            <span>The more red flags you set, the cleaner the output — and the fewer "but I told you not to!" moments in your next client call.</span>
+          </div>
+        </div>
+      </div>
+      <div class="save-client-row">
+        <label for="saveToggle">💾 Save this client's preferences for next time</label>
+        <label class="save-toggle">
+          <input type="checkbox" id="saveToggle" checked/>
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </label>
+      </div>
+      <button class="btn-gen" onclick="startGen()">✦ Generate Captions</button>
+    </div>
+
+    <!-- PANEL 2 -->
+    <div class="panel" id="p2">
+      <div class="load-wrap">
+        <div class="ring"></div>
+        <div class="lt" id="lt">Researching your brand…</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Usually takes 15–25 seconds.</div>
+        <div class="ls-wrap">
+          <div class="ls" id="ls1"><div class="ld">1</div><span>Analyzing brand & industry context</span></div>
+          <div class="ls" id="ls2"><div class="ld">2</div><span>Researching competitor captions</span></div>
+          <div class="ls" id="ls3"><div class="ld">3</div><span>Extracting high-engagement patterns</span></div>
+          <div class="ls" id="ls4"><div class="ld">4</div><span>Writing 3 strategic options</span></div>
+          <div class="ls" id="ls5"><div class="ld">5</div><span>Building client presentation</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 3 -->
+    <div class="panel" id="p3">
+      <button class="back-b" onclick="goP(1)">← Edit brief</button>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:21px;font-weight:800;letter-spacing:-.025em;margin-bottom:4px;" id="rTitle">Caption Options</div>
+        <div style="font-size:13px;color:var(--muted);" id="rSub">Based on competitive research & analytics</div>
+      </div>
+
+      <!-- RESULT TABS -->
+      <div class="res-tabs">
+        <button class="res-tab on" onclick="switchResTab('captions',this)">✦ Captions</button>
+        <button class="res-tab" onclick="switchResTab('history',this)" id="histTab">🕒 History</button>
+      </div>
+
+      <!-- CAPTIONS TAB -->
+      <div class="res-tab-panel on" id="tab-captions">
+        <div class="know-box" id="kBox" style="display:none;"><span class="know-ic">✓</span><span id="kTxt"></span></div>
+        <div class="rc-card" id="rcCard" style="display:none;">
+          <div class="rc-lbl">✦ Competitive Intelligence</div>
+          <div class="rc-text" id="rcTxt"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;" id="rcTags"></div>
+        </div>
+        <div class="ins-row" id="insRow" style="display:none;">
+          <div class="ins-tile"><div class="ins-l">Best Length</div><div class="ins-v" id="iv1">—</div><div class="ins-d" id="id1"></div></div>
+          <div class="ins-tile"><div class="ins-l">Top Hook</div><div class="ins-v" id="iv2">—</div><div class="ins-d" id="id2"></div></div>
+          <div class="ins-tile"><div class="ins-l">Hashtag Strategy</div><div class="ins-v" id="iv3">—</div><div class="ins-d" id="id3"></div></div>
+        </div>
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);margin-bottom:11px;">Select a caption to continue</div>
+        <div class="cap-list" id="capList"></div>
+        <div class="act-bar">
+          <div class="ab-t">Ready for client review?</div>
+          <div class="ab-s">Select a caption above, then create a personalised approval message for your client.</div>
+          <div class="ab-btns">
+            <button class="ab-btn pri" onclick="goMsg()">Create Client Message →</button>
+            <button class="ab-btn" onclick="copyAll()">Copy All 3</button>
+            <button class="ab-btn" onclick="goP(2);runLoader();callAPI();">Regenerate ↺</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div class="res-tab-panel" id="tab-history">
+        <div class="hist-wrap">
+          <div class="hist-header">
+            <div class="hist-title">Past Captions</div>
+            <div class="hist-count" id="histCount">0 saved</div>
+          </div>
+          <div class="hist-list" id="histList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 4 -->
+    <div class="panel" id="p4">
+      <button class="back-b" onclick="goP(3)">← Back to captions</button>
+
+      <div class="cn-wrap" id="cnWrap">
+        <div class="cn-emoji">👤</div>
+        <div class="cn-t">Who is this message for?</div>
+        <div class="cn-s">Enter your client's name and we'll write a personalised approval message in their language — with the selected caption and research links to back it up.</div>
+        <div class="cn-row" style="margin-bottom:12px;">
+          <input class="cn-inp" id="cnInp" type="text" placeholder="e.g. Sarah, Ahmed, Mr. Johnson…" onkeydown="if(event.key==='Enter')buildMsg()"/>
+        </div>
+        <div class="msg-lang-row">
+          <label>Message Language:</label>
+          <select class="msg-lang-sel" id="msgLang">
+            <option value="English">English</option>
+            <option value="Arabic">Arabic (العربية)</option>
+            <option value="French">French</option>
+            <option value="Spanish">Spanish</option>
+          </select>
+        </div>
+        <button class="cn-go" style="width:100%;border-radius:var(--r-xs);padding:13px;" onclick="buildMsg()">Generate Message →</button>
+      </div>
+
+      <div id="msgSection" style="display:none;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);margin-bottom:11px;">Client Approval Message</div>
+        <div class="msg-card" id="msgCard"></div>
+
+        <!-- STATUS TRACKER -->
+        <div class="status-bar">
+          <label>Approval Status:</label>
+          <select class="status-select" id="statusSelect" onchange="updateStatus(this.value)">
+            <option value="pending">⏳ Pending</option>
+            <option value="sent">📤 Sent to Client</option>
+            <option value="approved">✅ Approved</option>
+            <option value="revision">🔄 Revision Requested</option>
+          </select>
+        </div>
+
+        <!-- REVISION MODE -->
+        <div style="margin-top:10px;">
+          <button class="ab-btn" style="width:100%;text-align:left;" onclick="toggleRevision()">✏️ Client asked for changes? Request a revision →</button>
+          <div class="revision-box" id="revisionBox">
+            <div class="rev-title">✏️ Revision Request</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">What did the client say? The AI will rewrite the caption keeping all the research context.</div>
+            <div class="rev-row">
+              <textarea class="rev-inp" id="revInp" placeholder="e.g. Make it shorter, remove the question at the start, add a stronger CTA, make it more playful…"></textarea>
+            </div>
+            <button class="rev-btn" style="width:100%;margin-top:8px;" onclick="doRevision()">↺ Rewrite Caption</button>
+            <div class="rev-loading" id="revLoading">✨ Rewriting based on feedback…</div>
+          </div>
+        </div>
+
+        <!-- PERFORMANCE FEEDBACK -->
+        <div style="margin-top:10px;">
+          <button class="ab-btn" style="width:100%;text-align:left;" onclick="togglePerf()">📊 Post went live? Log the results →</button>
+          <div class="perf-wrap" id="perfWrap">
+            <div class="perf-title">📊 Performance Results</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">These numbers get saved to the client's profile and help the AI improve future captions for them.</div>
+            <div class="perf-grid">
+              <div class="perf-field"><label>Likes</label><input class="perf-inp" id="pfLikes" type="number" placeholder="0"/></div>
+              <div class="perf-field"><label>Comments</label><input class="perf-inp" id="pfComments" type="number" placeholder="0"/></div>
+              <div class="perf-field"><label>Shares/Saves</label><input class="perf-inp" id="pfShares" type="number" placeholder="0"/></div>
+              <div class="perf-field"><label>Reach</label><input class="perf-inp" id="pfReach" type="number" placeholder="0"/></div>
+              <div class="perf-field"><label>Impressions</label><input class="perf-inp" id="pfImpress" type="number" placeholder="0"/></div>
+              <div class="perf-field"><label>Eng. Rate %</label><input class="perf-inp" id="pfEngRate" type="number" step="0.1" placeholder="0.0"/></div>
+            </div>
+            <button class="rev-btn" style="background:var(--green);" onclick="savePerf()">Save Results</button>
+          </div>
+        </div>
+
+        <!-- SCHEDULER LINKS -->
+        <div style="margin-top:14px;">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;">📅 Send to Scheduler</div>
+          <div class="scheduler-wrap">
+            <a class="sched-btn" href="https://buffer.com" target="_blank"><span class="sched-ic">🟦</span>Buffer</a>
+            <a class="sched-btn" href="https://later.com" target="_blank"><span class="sched-ic">🟣</span>Later</a>
+            <a class="sched-btn" href="https://hootsuite.com" target="_blank"><span class="sched-ic">🦉</span>Hootsuite</a>
+            <a class="sched-btn" href="https://business.facebook.com" target="_blank"><span class="sched-ic">📘</span>Meta Suite</a>
+            <button class="sched-btn" onclick="copyForScheduler()"><span class="sched-ic">📋</span>Copy for Scheduler</button>
+          </div>
+        </div>
+
+        <div class="act-row" style="margin-top:14px;">
+          <button class="ab-btn pri" onclick="copyMsg()">Copy Message</button>
+          <button class="ab-btn" onclick="resetCN()">Change Name</button>
+          <button class="ab-btn" onclick="goP(3)">Back to Captions</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- TEAM MODAL -->
+<div id="teamModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.4);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:var(--r);padding:28px;max-width:420px;width:calc(100% - 40px);box-shadow:var(--shadow-md);position:relative;">
+    <button onclick="closeTeamPanel()" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);">✕</button>
+    <div style="font-size:22px;margin-bottom:10px;">👥</div>
+    <div style="font-family:var(--font);font-size:18px;font-weight:800;margin-bottom:6px;letter-spacing:-.02em;">Team Workspace</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;">Share a Workspace Code with your team. Anyone who enters the same code sees the same client list and history — no login needed.</div>
+    <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px;">Your Workspace Code</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <input id="wsCodeInp" style="flex:1;font-family:var(--font);font-size:15px;font-weight:700;padding:11px 14px;border-radius:var(--r-xs);border:1.5px solid var(--border2);background:var(--off);color:var(--text);outline:none;letter-spacing:.08em;text-transform:uppercase;" placeholder="e.g. ACME2025" maxlength="12"/>
+      <button onclick="applyWorkspace()" style="padding:11px 18px;border-radius:var(--r-xs);background:var(--orange);color:#fff;font-size:14px;font-weight:800;font-family:var(--font);border:none;cursor:pointer;box-shadow:var(--shadow-orange);">Apply</button>
+    </div>
+    <div id="wsStatus" style="font-size:13px;color:var(--muted);line-height:1.6;"></div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px;">Active Workspace</div>
+      <div id="wsActive" style="font-size:14px;font-weight:700;color:var(--text);">Personal (no team code set)</div>
+      <button onclick="leaveWorkspace()" id="wsLeaveBtn" style="display:none;margin-top:10px;padding:8px 16px;border-radius:20px;border:1.5px solid var(--border2);background:var(--off);color:var(--muted);font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Leave Workspace</button>
+    </div>
+    <div style="margin-top:14px;font-size:11px;color:var(--muted2);line-height:1.5;">💡 Tip: Give your team the same code. All client profiles and history will be shared. Keep your code private — anyone with it can see your clients.</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-logo"><div class="nav-orb" style="width:26px;height:26px;font-size:13px;">✦</div>Broomstick</div>
+  <div class="ft-s">AI-powered social media captions for agencies & creators</div>
+  <div class="ft-c">Powered by Claude AI · Anthropic</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ════════════════════════════════════════════
+   1. WORKSPACE (must be first — used by storage)
+═══════════════════════════════════════════════ */
+let WORKSPACE_KEY = localStorage.getItem('broom_ws_active') || '';
+
+function getStoreKey(base) {
+  return WORKSPACE_KEY ? `broom_ws_${WORKSPACE_KEY}_${base}` : base;
+}
+
+function openTeamPanel() {
+  document.getElementById('teamModal').style.display = 'flex';
+  document.getElementById('wsCodeInp').value = WORKSPACE_KEY;
+  updateWsStatus(WORKSPACE_KEY);
+}
+function closeTeamPanel() { document.getElementById('teamModal').style.display = 'none'; }
+
+function applyWorkspace() {
+  const code = document.getElementById('wsCodeInp').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!code) { toast('Enter a workspace code.'); return; }
+  WORKSPACE_KEY = code;
+  localStorage.setItem('broom_ws_active', code);
+  updateWsStatus(code);
+  renderClientGrid();
+  toast('👥 Workspace "' + code + '" active!');
+  setTimeout(closeTeamPanel, 1200);
+}
+
+function leaveWorkspace() {
+  WORKSPACE_KEY = '';
+  localStorage.removeItem('broom_ws_active');
+  updateWsStatus('');
+  renderClientGrid();
+  toast('Back to personal workspace.');
+}
+
+function updateWsStatus(code) {
+  const active = document.getElementById('wsActive');
+  const leaveBtn = document.getElementById('wsLeaveBtn');
+  const status = document.getElementById('wsStatus');
+  if (code) {
+    active.textContent = 'Team: ' + code;
+    active.style.color = 'var(--orange)';
+    leaveBtn.style.display = 'block';
+    const cnt = loadClients().length;
+    status.innerHTML = `<span style="color:var(--green);">✓ Connected — ${cnt} shared client${cnt !== 1 ? 's' : ''} in this workspace.</span>`;
+  } else {
+    active.textContent = 'Personal (no code set)';
+    active.style.color = 'var(--text)';
+    leaveBtn.style.display = 'none';
+    status.innerHTML = '';
+  }
+}
+
+/* ════════════════════════════════════════════
+   2. STORAGE HELPERS
+═══════════════════════════════════════════════ */
+function loadClients() {
+  try { return JSON.parse(localStorage.getItem(getStoreKey('broomstick_clients')) || '[]'); } catch { return []; }
+}
+function saveClients(arr) {
+  localStorage.setItem(getStoreKey('broomstick_clients'), JSON.stringify(arr));
+}
+function loadHistory(clientId) {
+  try { return JSON.parse(localStorage.getItem(getStoreKey('broom_hist_' + (clientId || 'global'))) || '[]'); } catch { return []; }
+}
+function saveHistory(clientId, arr) {
+  localStorage.setItem(getStoreKey('broom_hist_' + (clientId || 'global')), JSON.stringify(arr.slice(0, 20)));
+}
+function genId() { return 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7); }
+
+/* ════════════════════════════════════════════
+   3. STATE VARIABLES
+═══════════════════════════════════════════════ */
+let PM = '', PP = [], PT = [], PD = [], GD = {}, SN = {}, SI = -1;
+let ACTIVE_CLIENT_ID = null;
+let UPLOADED_FILES = [];
+let VP_EXAMPLES = [];
+
+/* ════════════════════════════════════════════
+   4. TOAST
+═══════════════════════════════════════════════ */
+function toast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+/* ════════════════════════════════════════════
+   5. FILE UPLOAD
+═══════════════════════════════════════════════ */
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+}
+
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    if (UPLOADED_FILES.length >= 4) { toast('Max 4 files.'); return; }
+    const isVideo = file.type.startsWith('video/');
+    const isImage = file.type.startsWith('image/');
+    if (!isImage && !isVideo) { toast('Images and videos only.'); return; }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const full = e.target.result;
+      if (isVideo) {
+        const vid = document.createElement('video');
+        vid.src = full; vid.muted = true; vid.currentTime = 1;
+        vid.onloadeddata = () => {
+          const c = document.createElement('canvas');
+          c.width = 320; c.height = 180;
+          vid.play().then(() => {
+            setTimeout(() => {
+              c.getContext('2d').drawImage(vid, 0, 0, 320, 180);
+              vid.pause();
+              const thumb = c.toDataURL('image/jpeg', 0.7);
+              UPLOADED_FILES.push({ base64: thumb.split(',')[1], mediaType: 'image/jpeg', name: file.name, isVideo: true, thumb });
+              addPreview({ thumb, name: file.name, isVideo: true }, UPLOADED_FILES.length - 1);
+              updateAnalysisStatus();
+            }, 600);
+          }).catch(() => {
+            UPLOADED_FILES.push({ base64: null, mediaType: null, name: file.name, isVideo: true, thumb: null });
+            addPreview({ thumb: null, name: file.name, isVideo: true }, UPLOADED_FILES.length - 1);
+          });
+        };
+        vid.load();
+      } else {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement('canvas');
+          const MAX = 1200;
+          let w = img.width, h = img.height;
+          if (w > MAX) { h = Math.round(h * (MAX / w)); w = MAX; }
+          if (h > MAX) { w = Math.round(w * (MAX / h)); h = MAX; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const thumb = canvas.toDataURL('image/jpeg', 0.85);
+          UPLOADED_FILES.push({ base64: thumb.split(',')[1], mediaType: 'image/jpeg', name: file.name, isVideo: false, thumb });
+          addPreview({ thumb, name: file.name, isVideo: false }, UPLOADED_FILES.length - 1);
+          updateAnalysisStatus();
+        };
+        img.src = full;
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function addPreview(f, idx) {
+  const wrap = document.getElementById('uploadPreviews');
+  const div = document.createElement('div');
+  div.className = 'preview-item'; div.id = 'prev' + idx;
+  if (f.isVideo && !f.thumb) {
+    div.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;">🎬</div><span class="pv-type">video</span><button class="pv-del" onclick="removeFile(${idx})">✕</button>`;
+  } else {
+    div.innerHTML = `<img src="${f.thumb}" alt="${f.name}"/>${f.isVideo ? '<div class="pv-video-overlay">▶</div>' : ''}<span class="pv-type">${f.isVideo ? 'video' : 'image'}</span><button class="pv-del" onclick="removeFile(${idx})">✕</button>`;
+  }
+  wrap.appendChild(div);
+}
+
+function removeFile(idx) {
+  UPLOADED_FILES.splice(idx, 1);
+  document.getElementById('uploadPreviews').innerHTML = '';
+  UPLOADED_FILES.forEach((f, i) => addPreview({ thumb: f.thumb, name: f.name, isVideo: f.isVideo }, i));
+  updateAnalysisStatus();
+}
+
+function updateAnalysisStatus() {
+  const box = document.getElementById('mediaAnalysisBox');
+  const txt = document.getElementById('mediaAnalysisText');
+  const imgs = UPLOADED_FILES.filter(f => f.base64);
+  const vidOnly = UPLOADED_FILES.filter(f => f.isVideo && !f.base64);
+  if (!UPLOADED_FILES.length) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  let msg = '';
+  if (imgs.length) msg += `${imgs.length} file${imgs.length > 1 ? 's' : ''} ready for visual analysis. `;
+  if (vidOnly.length) msg += `${vidOnly.length} video added (frame extracted for analysis). `;
+  msg += 'These will directly inform the captions.';
+  txt.textContent = msg;
+}
+
+/* ════════════════════════════════════════════
+   6. CLIENT MEMORY
+═══════════════════════════════════════════════ */
+function renderClientGrid() {
+  const clients = loadClients();
+  const grid = document.getElementById('clientGrid');
+  const count = document.getElementById('clientDbCount');
+  if (!grid) return;
+  count.textContent = clients.length + ' saved';
+  if (!clients.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:18px;font-size:13px;color:var(--muted2);font-weight:300;">No clients yet. Fill in the form and save.</div>`;
+    return;
+  }
+  grid.innerHTML = clients.map(c => `
+    <div class="client-card${ACTIVE_CLIENT_ID === c.id ? ' active-client' : ''}" onclick="loadClient('${c.id}')">
+      <button class="cc-del" onclick="event.stopPropagation();deleteClient('${c.id}')" title="Delete">✕</button>
+      <div class="cc-avatar">${(c.clientName || c.brand || '?')[0].toUpperCase()}</div>
+      <div class="cc-name">${c.clientName || 'Unnamed'}</div>
+      <div class="cc-brand">${c.brand || 'No brand'}</div>
+      <div class="cc-plats">${(c.platforms || []).join(', ') || 'No platforms'}</div>
+    </div>`).join('');
+}
+
+function loadClient(id) {
+  const clients = loadClients();
+  const c = clients.find(x => x.id === id);
+  if (!c) return;
+  ACTIVE_CLIENT_ID = id;
+  renderClientGrid();
+
+  document.getElementById('bName').value = c.brand || '';
+  document.getElementById('eName').value = c.event || '';
+  document.getElementById('bText').value = c.brief || '';
+  document.getElementById('lang').value = c.lang || 'English';
+  document.getElementById('goal').value = c.goal || 'Engagement';
+  document.getElementById('extra').value = c.extra || '';
+  document.getElementById('cnInp').value = c.clientName || '';
+
+  PM = c.media || '';
+  document.querySelectorAll('.mpill').forEach(e => e.classList.remove('s'));
+  if (PM) document.querySelectorAll('.mpill').forEach(e => { if (e.textContent.includes(PM)) e.classList.add('s'); });
+
+  PP = [...(c.platforms || [])];
+  document.querySelectorAll('.plat').forEach(e => {
+    e.classList.toggle('s', PP.some(p => e.textContent.includes(p.split('/')[0].trim())));
+  });
+
+  PT = [...(c.tones || [])];
+  document.querySelectorAll('.tone-p').forEach(e => {
+    e.classList.toggle('s', PT.includes(e.textContent.trim()));
+  });
+
+  PD = [...(c.dislikes || [])];
+  document.querySelectorAll('.dislike-chip[data-preset]').forEach(e => {
+    e.classList.toggle('s', PD.includes(e.dataset.preset));
+  });
+  document.querySelectorAll('.dislike-chip.custom-chip').forEach(e => e.remove());
+  const presets = ['Emojis in captions', 'Hard selling or pushy CTAs', 'Hashtag overload (10+ tags)', 'Slang or informal language', 'Long captions (keep it short!)', 'Corporate or stiff language', 'Mentioning competitors', 'Discount or price-focused language', 'Clickbait-style hooks', 'Questions directed at the audience', 'Generic phrases like "We are excited to…"', 'Excessive exclamation marks!!!'];
+  PD.forEach(v => {
+    if (!presets.includes(v)) {
+      const chip = document.createElement('div');
+      chip.className = 'dislike-chip s custom-chip';
+      chip.innerHTML = `<span class="dc-em">✏️</span>${v}<span style="margin-left:4px;cursor:pointer;opacity:.6;" onclick="removeCustomDislike(this,'${v.replace(/'/g, "\\'")}')">✕</span>`;
+      document.getElementById('dislikeWrap').appendChild(chip);
+    }
+  });
+
+  loadVoiceFromClient(c);
+
+  const hist = loadHistory(id);
+  const histTab = document.getElementById('histTab');
+  if (histTab && hist.length) histTab.textContent = `🕒 History (${hist.length})`;
+
+  document.getElementById('clbName').textContent = c.clientName || c.brand || 'Client';
+  document.getElementById('clientLoadedBanner').style.display = 'flex';
+  toast('✓ ' + (c.clientName || c.brand) + ' loaded!');
+}
+
+function saveCurrentClient() {
+  const clientName = document.getElementById('cnInp').value.trim();
+  const brand = document.getElementById('bName').value.trim();
+  if (!brand && !clientName) return;
+  const clients = loadClients();
+  const data = {
+    id: ACTIVE_CLIENT_ID || genId(),
+    clientName, brand,
+    event: document.getElementById('eName').value.trim(),
+    brief: document.getElementById('bText').value.trim(),
+    lang: document.getElementById('lang').value,
+    goal: document.getElementById('goal').value,
+    extra: document.getElementById('extra').value.trim(),
+    media: PM, platforms: [...PP], tones: [...PT], dislikes: [...PD],
+    updatedAt: new Date().toISOString()
+  };
+  const idx = clients.findIndex(x => x.id === data.id);
+  if (idx >= 0) clients[idx] = data; else clients.unshift(data);
+  ACTIVE_CLIENT_ID = data.id;
+  saveClients(clients);
+  renderClientGrid();
+}
+
+function saveVoiceToClient() {
+  if (!ACTIVE_CLIENT_ID) return;
+  const clients = loadClients();
+  const idx = clients.findIndex(x => x.id === ACTIVE_CLIENT_ID);
+  if (idx >= 0) {
+    clients[idx].voiceProfile = document.getElementById('voiceProfile').value.trim();
+    clients[idx].voiceExamples = [...VP_EXAMPLES];
+    saveClients(clients);
+  }
+}
+
+function loadVoiceFromClient(c) {
+  if (c.voiceProfile) document.getElementById('voiceProfile').value = c.voiceProfile;
+  if (c.voiceExamples) { VP_EXAMPLES = [...c.voiceExamples]; renderVoiceExamples(); }
+}
+
+function deleteClient(id) {
+  if (!confirm('Remove this client?')) return;
+  saveClients(loadClients().filter(x => x.id !== id));
+  if (ACTIVE_CLIENT_ID === id) { ACTIVE_CLIENT_ID = null; clearLoadedClient(); }
+  renderClientGrid();
+  toast('Client removed.');
+}
+
+function startNewClient() {
+  ACTIVE_CLIENT_ID = null;
+  clearLoadedClient();
+  ['bName', 'eName', 'bText', 'extra', 'voiceProfile'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('lang').value = 'English';
+  document.getElementById('goal').value = 'Engagement';
+  PM = ''; PP = []; PT = []; PD = []; VP_EXAMPLES = []; UPLOADED_FILES = [];
+  document.getElementById('uploadPreviews').innerHTML = '';
+  document.getElementById('mediaAnalysisBox').style.display = 'none';
+  renderVoiceExamples();
+  document.querySelectorAll('.mpill,.plat,.tone-p,.dislike-chip').forEach(e => e.classList.remove('s'));
+  document.querySelectorAll('.dislike-chip.custom-chip').forEach(e => e.remove());
+  renderClientGrid();
+  toast('Fresh start! Fill in the new client\'s details.');
+}
+
+function clearLoadedClient() {
+  ACTIVE_CLIENT_ID = null;
+  document.getElementById('clientLoadedBanner').style.display = 'none';
+  renderClientGrid();
+}
+
+/* ════════════════════════════════════════════
+   7. VOICE PROFILE
+═══════════════════════════════════════════════ */
+function addVoiceExample() {
+  const inp = document.getElementById('vpExInp');
+  const val = inp.value.trim();
+  if (!val) return;
+  VP_EXAMPLES.push(val);
+  inp.value = '';
+  renderVoiceExamples();
+  toast('Example added ✓');
+}
+
+function renderVoiceExamples() {
+  const el = document.getElementById('approvedExList');
+  if (!el) return;
+  el.innerHTML = VP_EXAMPLES.length
+    ? `<div style="font-size:11px;color:var(--muted);font-weight:600;margin:10px 0 6px;">Approved Examples (${VP_EXAMPLES.length})</div>` +
+      VP_EXAMPLES.map((ex, i) =>
+        `<div class="vp-example-item"><span style="color:var(--orange);flex-shrink:0;">✦</span><span style="flex:1;">${ex}</span><button onclick="removeVpExample(${i})" style="background:none;border:none;cursor:pointer;color:var(--muted2);font-size:11px;">✕</button></div>`
+      ).join('')
+    : '';
+}
+
+function removeVpExample(i) { VP_EXAMPLES.splice(i, 1); renderVoiceExamples(); }
+
+/* ════════════════════════════════════════════
+   8. PILL TOGGLES
+═══════════════════════════════════════════════ */
+function pickMedia(v, el) { document.querySelectorAll('.mpill').forEach(e => e.classList.remove('s')); el.classList.add('s'); PM = v; }
+function togP(el, n) { el.classList.toggle('s'); PP = el.classList.contains('s') ? [...PP, n] : PP.filter(x => x !== n); }
+function togT(el) { el.classList.toggle('s'); const t = el.textContent.trim(); PT = el.classList.contains('s') ? [...PT, t] : PT.filter(x => x !== t); }
+function togD(el, v) { el.classList.toggle('s'); PD = el.classList.contains('s') ? [...PD, v] : PD.filter(x => x !== v); }
+
+function addCustomDislike() {
+  const inp = document.getElementById('dislikeCustom');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (PD.includes(val)) { toast('Already added!'); return; }
+  PD.push(val);
+  const chip = document.createElement('div');
+  chip.className = 'dislike-chip s custom-chip';
+  chip.innerHTML = `<span class="dc-em">✏️</span>${val}<span style="margin-left:4px;cursor:pointer;opacity:.6;" onclick="removeCustomDislike(this,'${val.replace(/'/g, "\\'")}')">✕</span>`;
+  document.getElementById('dislikeWrap').appendChild(chip);
+  inp.value = '';
+  toast('"' + val + '" added 🚩');
+}
+
+function removeCustomDislike(span, val) { PD = PD.filter(x => x !== val); span.parentElement.remove(); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const extraEl = document.getElementById('extra');
+  if (extraEl) extraEl.addEventListener('input', function () {
+    const n = this.value.length;
+    const el = document.getElementById('cc');
+    if (el) { el.textContent = n + ' chars'; el.className = 'ch-count' + (n > 300 ? ' over' : n > 200 ? ' warn' : ''); }
+  });
+});
+
+/* ════════════════════════════════════════════
+   9. NAVIGATION
+═══════════════════════════════════════════════ */
+function goP(n) {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('p' + i).classList.toggle('active', i === n);
+    const d = document.getElementById('d' + i), l = document.getElementById('l' + i);
+    if (!d) continue;
+    if (i < n) { d.className = 'pd done'; d.textContent = '✓'; }
+    else if (i === n) { d.className = 'pd on'; d.textContent = i; }
+    else { d.className = 'pd'; d.textContent = i; }
+    l.className = 'pl-lbl' + (i === n ? ' on' : '');
+    const ln = document.getElementById('pl' + i);
+    if (ln) ln.className = 'pline' + (i < n ? ' done' : '');
+  }
+  window.scrollTo({ top: document.getElementById('tool').offsetTop - 65, behavior: 'smooth' });
+}
+
+/* ════════════════════════════════════════════
+   10. LOADING ANIMATION
+═══════════════════════════════════════════════ */
+function runLoader() {
+  const rows = document.querySelectorAll('.ls');
+  rows.forEach(r => r.classList.remove('on', 'done'));
+  const titles = [
+    'Analysing your uploaded design…',
+    'Researching brand & competitors…',
+    'Extracting high-engagement patterns…',
+    'Writing 3 captions based on your visuals…',
+    'Building client presentation…'
+  ];
+  let s = 0;
+  function nx() {
+    if (s > 0) rows[s - 1].classList.replace('on', 'done');
+    if (s < rows.length) {
+      rows[s].classList.add('on');
+      document.getElementById('lt').textContent = titles[s];
+      s++;
+      setTimeout(nx, 2600);
+    }
+  }
+  nx();
+}
+
+/* ════════════════════════════════════════════
+   11. GENERATE
+═══════════════════════════════════════════════ */
+async function startGen() {
+  const brand = document.getElementById('bName').value.trim();
+  const brief = document.getElementById('bText').value.trim();
+  if (!brand && !brief) { toast('Enter a brand name or brief.'); return; }
+  if (!PP.length) { toast('Select at least one platform.'); return; }
+  if (!PT.length) { toast('Select at least one tone.'); return; }
+
+  const voiceProfile = document.getElementById('voiceProfile').value.trim();
+  SN = {
+    brand, event: document.getElementById('eName').value.trim(), brief,
+    lang: document.getElementById('lang').value, goal: document.getElementById('goal').value,
+    extra: document.getElementById('extra').value.trim(), dislikes: [...PD],
+    media: PM, platforms: [...PP], tones: [...PT],
+    voiceProfile, voiceExamples: [...VP_EXAMPLES]
+  };
+
+  if (document.getElementById('saveToggle').checked) { saveCurrentClient(); saveVoiceToClient(); }
+  SI = -1;
+  goP(2);
+  runLoader();
+  await callAPI();
+}
+
+async function callAPI() {
+  const { brand, event, brief, lang, goal, extra, dislikes, media, platforms, tones, voiceProfile, voiceExamples } = SN;
+  const hasImages = UPLOADED_FILES.filter(f => f.base64).length > 0;
+
+  const voiceSection = (voiceProfile || voiceExamples?.length)
+    ? `\n\nBRAND VOICE PROFILE:\n${voiceProfile || ''}\n${voiceExamples?.length ? 'APPROVED CAPTION EXAMPLES (match this style):\n' + voiceExamples.map((e, i) => `${i + 1}. ${e}`).join('\n') : ''}`
+    : '';
+
+  const sys = `You are an elite social media strategist and visual content analyst. Respond ONLY with a valid JSON object — no markdown, no code fences.
+${hasImages ? 'Images have been uploaded. Analyse colours, mood, objects, text, composition, style — use these observations directly to write captions that match.' : ''}
+
+Schema:
+{
+  "brand_summary": "2-3 sentence brand overview",
+  "visual_analysis": "${hasImages ? '2-3 sentences on what you see in the images and how it shaped the captions' : 'null'}",
+  "research_summary": "2-3 sentences on what top-performing captions look like in this industry on these platforms",
+  "research_tags": ["insight1","insight2","insight3","insight4"],
+  "insights": {
+    "best_length": {"value":"e.g. 80-120 words","desc":"reason"},
+    "top_hook": {"value":"e.g. Question Hook","desc":"reason"},
+    "hashtag_strategy": {"value":"e.g. 5-8 niche tags","desc":"reason"}
+  },
+  "captions": [
+    {
+      "strategy": "name",
+      "text": "full caption body, no hashtags${hasImages ? ' — reference specific visual elements' : ''}",
+      "hashtags": "#tag1 #tag2 #tag3 #tag4 #tag5",
+      "tags": ["Hook type","CTA style","Tone"],
+      "est_engagement": "e.g. +28% above avg",
+      "best_for": "e.g. Reach & Discovery",
+      "confidence": "e.g. 88%",
+      "why_it_works": "2 sentences of strategic rationale",
+      "research_links": [
+        {"label":"Article title","url":"https://real-url.com","desc":"what this proves"}
+      ]
+    },
+    {},
+    {}
+  ]
+}
+
+For research_links: 2-3 real links per caption from HubSpot, Sprout Social, Later.com, Buffer, Meta Business, LinkedIn Marketing, TikTok for Business, Hootsuite, or HBR.`;
+
+  const textContent = `Brand: ${brand || 'Not specified'}
+Event: ${event || 'None'}
+Brief: ${brief || 'General brand post'}
+Content type: ${media || 'Post'}
+Platforms: ${platforms.join(', ')}
+Tones: ${tones.join(', ')}
+Goal: ${goal}
+Language: ${lang}
+Extra: ${extra || 'None'}
+Client DISLIKES — STRICTLY AVOID: ${dislikes.length ? dislikes.join('; ') : 'None'}${voiceSection}
+${hasImages ? '\nImages uploaded — analyse them and write captions that reference what you see.' : '\nNo images — base captions on brief and research.'}
+
+Write 3 distinct, human, platform-native captions. JSON only.`;
+
+  const imageBlocks = UPLOADED_FILES.filter(f => f.base64).map(f => ({
+    type: 'image',
+    source: { type: 'base64', media_type: f.mediaType || 'image/jpeg', data: f.base64 }
+  }));
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2600,
+        system: sys,
+        messages: [{ role: 'user', content: [...imageBlocks, { type: 'text', text: textContent }] }]
+      })
+    });
+    const d = await res.json();
+    const raw = d.content.map(b => b.text || '').join('');
+    GD = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    renderRes();
+    goP(3);
+  } catch (e) {
+    console.error(e);
+    toast('Error generating captions. Please try again.');
+    goP(1);
+  }
+}
+
+/* ════════════════════════════════════════════
+   12. RENDER RESULTS
+═══════════════════════════════════════════════ */
+function renderRes() {
+  const d = GD;
+  const { brand, platforms } = SN;
+
+  document.getElementById('rTitle').textContent = `Caption Options — ${brand || 'Your Brand'}`;
+  const uploadedImgs = UPLOADED_FILES.filter(f => f.thumb);
+  const imgBadge = uploadedImgs.length ? ` · ${uploadedImgs.length} design${uploadedImgs.length > 1 ? 's' : ''} analysed` : '';
+  document.getElementById('rSub').textContent = `Researched across ${platforms.join(', ')} · ${(d.research_tags || []).length} signals analyzed${imgBadge}`;
+
+  // Thumbnail strip
+  const existStrip = document.getElementById('thumbStrip');
+  if (existStrip) existStrip.remove();
+  if (uploadedImgs.length) {
+    const strip = document.createElement('div');
+    strip.id = 'thumbStrip';
+    strip.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;';
+    uploadedImgs.forEach(f => {
+      strip.innerHTML += `<div style="position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;border:1.5px solid var(--border2);flex-shrink:0;"><img src="${f.thumb}" style="width:100%;height:100%;object-fit:cover;"/>${f.isVideo ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);font-size:18px;">▶</div>' : ''}</div>`;
+    });
+    document.getElementById('kBox').parentNode.insertBefore(strip, document.getElementById('kBox'));
+  }
+
+  // Dislikes badge
+  const existBadge = document.getElementById('dislikesBadge');
+  if (existBadge) existBadge.remove();
+  if (SN.dislikes && SN.dislikes.length) {
+    const badge = document.createElement('div');
+    badge.id = 'dislikesBadge';
+    badge.style.cssText = 'display:flex;align-items:flex-start;gap:9px;padding:11px 14px;border-radius:11px;background:rgba(255,59,48,0.05);border:1.5px solid rgba(255,59,48,0.15);margin-bottom:14px;font-size:12px;color:#FF3B30;line-height:1.6;';
+    badge.innerHTML = `<span style="flex-shrink:0;font-size:14px;">🚫</span><span><strong style="font-weight:700;">Avoided:</strong> ${SN.dislikes.join(' · ')}</span>`;
+    document.getElementById('kBox').parentNode.insertBefore(badge, document.getElementById('kBox'));
+  }
+
+  if (d.brand_summary) { document.getElementById('kBox').style.display = 'flex'; document.getElementById('kTxt').textContent = d.brand_summary; }
+
+  // Visual analysis
+  const existVA = document.getElementById('visualAnalysisBox');
+  if (existVA) existVA.remove();
+  if (d.visual_analysis && d.visual_analysis !== 'null') {
+    const va = document.createElement('div');
+    va.id = 'visualAnalysisBox';
+    va.style.cssText = 'display:flex;align-items:flex-start;gap:9px;padding:12px 15px;border-radius:11px;background:rgba(255,107,0,0.06);border:1.5px solid rgba(255,107,0,0.18);margin-bottom:14px;font-size:13px;color:var(--text2);line-height:1.65;';
+    va.innerHTML = `<span style="flex-shrink:0;font-size:16px;margin-top:1px;">👁</span><div><strong style="color:var(--orange);display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Visual Analysis</strong>${d.visual_analysis}</div>`;
+    document.getElementById('rcCard').before(va);
+  }
+
+  if (d.research_summary) {
+    document.getElementById('rcCard').style.display = 'block';
+    document.getElementById('rcTxt').textContent = d.research_summary;
+    document.getElementById('rcTags').innerHTML = (d.research_tags || []).map(t => `<span class="rc-tag">${t}</span>`).join('');
+  }
+
+  if (d.insights) {
+    document.getElementById('insRow').style.display = 'grid';
+    document.getElementById('iv1').textContent = d.insights.best_length?.value || '—'; document.getElementById('id1').textContent = d.insights.best_length?.desc || '';
+    document.getElementById('iv2').textContent = d.insights.top_hook?.value || '—'; document.getElementById('id2').textContent = d.insights.top_hook?.desc || '';
+    document.getElementById('iv3').textContent = d.insights.hashtag_strategy?.value || '—'; document.getElementById('id3').textContent = d.insights.hashtag_strategy?.desc || '';
+  }
+
+  // Caption cards
+  const list = document.getElementById('capList');
+  list.innerHTML = '';
+  (d.captions || []).forEach((cap, i) => {
+    const el = document.createElement('div');
+    el.className = 'cap-card'; el.id = 'cap' + i;
+    const links = (cap.research_links || []).map(l =>
+      `<div class="cl-item"><div class="cl-ic">📊</div><div><div class="cl-lnk-t">${l.label}</div><a class="cl-lnk-u" href="${l.url}" target="_blank">${l.url}</a><div class="cl-desc">${l.desc || ''}</div></div></div>`
+    ).join('');
+    el.innerHTML = `
+      <div class="cap-top">
+        <div class="cap-lft"><div class="cap-num">${i + 1}</div><span class="cap-strat">${cap.strategy || 'Option ' + (i + 1)}</span></div>
+        <div class="cap-rgt">
+          <button class="cc-btn" id="sb${i}" onclick="pickCap(${i})">Select</button>
+          <button class="cc-btn" id="cb${i}" onclick="cpCap(${i})">Copy</button>
+        </div>
+      </div>
+      <div class="cap-body">
+        <div class="cap-txt">${cap.text || ''}</div>
+        <div class="cap-hash">${cap.hashtags || ''}</div>
+        <div class="cap-tags">${(cap.tags || []).map(t => `<span class="cap-tag">${t}</span>`).join('')}</div>
+        <div class="cap-metrics">
+          <div class="cm"><div class="cm-v">${cap.est_engagement || '—'}</div><div class="cm-l">Est. Engagement</div></div>
+          <div class="cm"><div class="cm-v">${cap.confidence || '—'}</div><div class="cm-l">Confidence</div></div>
+          <div class="cm"><div class="cm-v">${cap.best_for || '—'}</div><div class="cm-l">Best For</div></div>
+        </div>
+        <div class="cap-why"><strong>Why it works: </strong>${cap.why_it_works || ''}</div>
+        ${links ? `<div class="cap-links-wrap"><div class="cl-lbl">Research Links</div>${links}</div>` : ''}
+      </div>`;
+    list.appendChild(el);
+    // Auto-save to history
+    addToHistory(ACTIVE_CLIENT_ID || 'global', { ...SN, ...cap, status: 'pending' });
+  });
+
+  // Update history tab badge
+  const hist = loadHistory(ACTIVE_CLIENT_ID || 'global');
+  const histTab = document.getElementById('histTab');
+  if (histTab) histTab.textContent = `🕒 History (${hist.length})`;
+}
+
+function pickCap(i) {
+  SI = i;
+  document.querySelectorAll('.cap-card').forEach(c => c.classList.remove('sel'));
+  (GD.captions || []).forEach((_, j) => {
+    const b = document.getElementById('sb' + j);
+    if (b) { b.classList.remove('sel-btn'); b.textContent = 'Select'; }
+  });
+  document.getElementById('cap' + i).classList.add('sel');
+  const b = document.getElementById('sb' + i);
+  b.classList.add('sel-btn'); b.textContent = '✓ Selected';
+  toast('Caption ' + (i + 1) + ' selected!');
+}
+
+function cpCap(i) {
+  const c = GD.captions[i];
+  navigator.clipboard.writeText((c.text + '\n\n' + c.hashtags).trim()).then(() => {
+    const b = document.getElementById('cb' + i);
+    b.textContent = 'Copied!'; b.classList.add('cp-done');
+    setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('cp-done'); }, 2000);
+    toast('Copied!');
+  });
+}
+
+function copyAll() {
+  const t = (GD.captions || []).map((c, i) => `OPTION ${i + 1} — ${c.strategy}\n\n${c.text}\n\n${c.hashtags}`).join('\n\n---\n\n');
+  navigator.clipboard.writeText(t).then(() => toast('All 3 copied!'));
+}
+
+/* ════════════════════════════════════════════
+   13. HISTORY
+═══════════════════════════════════════════════ */
+function addToHistory(clientId, entry) {
+  const hist = loadHistory(clientId);
+  hist.unshift({ ...entry, id: 'h_' + Date.now(), date: new Date().toISOString() });
+  saveHistory(clientId, hist.slice(0, 20));
+}
+
+function renderHistory() {
+  const clientId = ACTIVE_CLIENT_ID || 'global';
+  const hist = loadHistory(clientId);
+  const list = document.getElementById('histList');
+  const count = document.getElementById('histCount');
+  if (!list) return;
+  count.textContent = hist.length + ' saved';
+  if (!hist.length) {
+    list.innerHTML = `<div class="hist-empty">No captions yet. Every caption you generate appears here automatically.</div>`;
+    return;
+  }
+  const show = hist.slice(0, 6);
+  list.innerHTML = show.map(h => {
+    const dateStr = new Date(h.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const sc = h.status || 'pending';
+    const sl = { approved: '✅ Approved', pending: '⏳ Pending', revision: '🔄 Revision', sent: '📤 Sent' }[sc] || '⏳ Pending';
+    return `<div class="hist-item" onclick="loadHistItem('${h.id}','${clientId}')">
+      <button class="hi-del" onclick="event.stopPropagation();delHistItem('${h.id}','${clientId}')">✕</button>
+      <div class="hi-top"><div class="hi-meta">
+        <span class="hi-date">${dateStr}</span>
+        <span class="hi-platform">${(h.platforms || []).join(' · ')}</span>
+        <span class="hi-status ${sc}">${sl}</span>
+      </div></div>
+      <div class="hi-strategy">${h.strategy || 'Caption'}</div>
+      <div class="hi-preview">${(h.text || '').slice(0, 100)}${(h.text || '').length > 100 ? '…' : ''}</div>
+    </div>`;
+  }).join('');
+  if (hist.length > 6) {
+    list.innerHTML += `<button class="hist-show-all" onclick="renderFullHistory()">Show all ${hist.length} captions →</button>`;
+  }
+}
+
+function renderFullHistory() {
+  const clientId = ACTIVE_CLIENT_ID || 'global';
+  const hist = loadHistory(clientId);
+  const list = document.getElementById('histList');
+  list.innerHTML = hist.map(h => {
+    const dateStr = new Date(h.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const sc = h.status || 'pending';
+    const sl = { approved: '✅ Approved', pending: '⏳ Pending', revision: '🔄 Revision', sent: '📤 Sent' }[sc] || '⏳ Pending';
+    return `<div class="hist-item" onclick="loadHistItem('${h.id}','${clientId}')">
+      <button class="hi-del" onclick="event.stopPropagation();delHistItem('${h.id}','${clientId}')">✕</button>
+      <div class="hi-top"><div class="hi-meta"><span class="hi-date">${dateStr}</span><span class="hi-platform">${(h.platforms || []).join(' · ')}</span><span class="hi-status ${sc}">${sl}</span></div></div>
+      <div class="hi-strategy">${h.strategy || 'Caption'}</div>
+      <div class="hi-preview">${(h.text || '').slice(0, 120)}…</div>
+    </div>`;
+  }).join('');
+}
+
+function loadHistItem(hid, clientId) {
+  const h = loadHistory(clientId).find(x => x.id === hid);
+  if (!h) return;
+  GD = { captions: [{ strategy: h.strategy, text: h.text, hashtags: h.hashtags, tags: h.tags || [], est_engagement: h.est_engagement || '—', confidence: h.confidence || '—', best_for: h.best_for || '—', why_it_works: h.why_it_works || '', research_links: h.research_links || [] }] };
+  SN = { brand: h.brand || '', platforms: h.platforms || [], goal: h.goal || 'Engagement', lang: h.lang || 'English', dislikes: h.dislikes || [], tones: h.tones || [] };
+  renderRes();
+  switchResTab('captions', document.querySelector('.res-tab'));
+  toast('Caption loaded from history!');
+}
+
+function delHistItem(hid, clientId) {
+  saveHistory(clientId, loadHistory(clientId).filter(x => x.id !== hid));
+  renderHistory();
+  toast('Removed from history.');
+}
+
+/* ════════════════════════════════════════════
+   14. TABS
+═══════════════════════════════════════════════ */
+function switchResTab(tab, btn) {
+  document.querySelectorAll('.res-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.res-tab-panel').forEach(p => p.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  else document.querySelectorAll('.res-tab').forEach(t => { if (t.textContent.toLowerCase().includes(tab)) t.classList.add('on'); });
+  const panel = document.getElementById('tab-' + tab);
+  if (panel) panel.classList.add('on');
+  if (tab === 'history') renderHistory();
+}
+
+/* ════════════════════════════════════════════
+   15. STATUS TRACKER
+═══════════════════════════════════════════════ */
+function updateStatus(val) {
+  if (SI < 0 || !GD.captions) return;
+  const cap = GD.captions[SI]; if (!cap) return;
+  const clientId = ACTIVE_CLIENT_ID || 'global';
+  const hist = loadHistory(clientId);
+  const idx = hist.findIndex(x => x.text === cap.text);
+  if (idx >= 0) { hist[idx].status = val; saveHistory(clientId, hist); }
+  const labels = { approved: '✅ Approved', sent: '📤 Sent', revision: '🔄 Revision flagged', pending: '⏳ Pending' };
+  toast(labels[val] || 'Status updated');
+}
+
+/* ════════════════════════════════════════════
+   16. REVISION MODE
+═══════════════════════════════════════════════ */
+function toggleRevision() {
+  const box = document.getElementById('revisionBox');
+  box.classList.toggle('open');
+  if (box.classList.contains('open')) document.getElementById('revInp').focus();
+}
+
+async function doRevision() {
+  const feedback = document.getElementById('revInp').value.trim();
+  if (!feedback) { toast('Describe the changes needed.'); return; }
+  const cap = GD.captions[SI]; if (!cap) { toast('No caption selected.'); return; }
+  const loading = document.getElementById('revLoading');
+  const btn = document.querySelector('.rev-btn');
+  if (btn) btn.disabled = true;
+  loading.style.display = 'block';
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 600,
+        system: `You are an elite social media copywriter. Rewrite the caption based on client feedback. Keep the strategic angle. Respond ONLY in JSON: {"text":"revised caption","hashtags":"#tag1 #tag2 #tag3","change_summary":"1 sentence on what changed"}`,
+        messages: [{ role: 'user', content: `Original: ${cap.text}\nHashtags: ${cap.hashtags}\nFeedback: ${feedback}\nBrand: ${SN.brand || ''}\nPlatforms: ${(SN.platforms || []).join(', ')}\nAvoid: ${(SN.dislikes || []).join(', ') || 'None'}` }]
+      })
+    });
+    const rd = await r.json();
+    const parsed = JSON.parse(rd.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim());
+    GD.captions[SI].text = parsed.text;
+    GD.captions[SI].hashtags = parsed.hashtags;
+    const txtEl = document.querySelector('#cap' + SI + ' .cap-txt');
+    const hashEl = document.querySelector('#cap' + SI + ' .cap-hash');
+    if (txtEl) txtEl.textContent = parsed.text;
+    if (hashEl) hashEl.textContent = parsed.hashtags;
+    const capBlk = document.querySelector('.msg-cap-blk');
+    if (capBlk) capBlk.innerHTML = parsed.text + `<div class="msg-hash">${parsed.hashtags}</div>`;
+    document.getElementById('revInp').value = '';
+    document.getElementById('revisionBox').classList.remove('open');
+    toast('✓ ' + parsed.change_summary);
+  } catch (e) { toast('Revision failed. Try again.'); }
+
+  loading.style.display = 'none';
+  if (btn) btn.disabled = false;
+}
+
+/* ════════════════════════════════════════════
+   17. PERFORMANCE FEEDBACK
+═══════════════════════════════════════════════ */
+function togglePerf() { document.getElementById('perfWrap').classList.toggle('open'); }
+
+function savePerf() {
+  const metrics = {
+    likes: parseInt(document.getElementById('pfLikes').value) || 0,
+    comments: parseInt(document.getElementById('pfComments').value) || 0,
+    shares: parseInt(document.getElementById('pfShares').value) || 0,
+    reach: parseInt(document.getElementById('pfReach').value) || 0,
+    impressions: parseInt(document.getElementById('pfImpress').value) || 0,
+    engRate: parseFloat(document.getElementById('pfEngRate').value) || 0
+  };
+  if (ACTIVE_CLIENT_ID) {
+    const clients = loadClients();
+    const idx = clients.findIndex(x => x.id === ACTIVE_CLIENT_ID);
+    if (idx >= 0) {
+      if (!clients[idx].performance) clients[idx].performance = [];
+      clients[idx].performance.unshift({ ...metrics, caption: (GD.captions[SI] || {}).text || '', date: new Date().toISOString(), strategy: (GD.captions[SI] || {}).strategy || '' });
+      saveClients(clients);
+    }
+  }
+  const clientId = ACTIVE_CLIENT_ID || 'global';
+  const hist = loadHistory(clientId);
+  if (GD.captions && GD.captions[SI]) {
+    const idx = hist.findIndex(x => x.text === GD.captions[SI].text);
+    if (idx >= 0) { hist[idx].metrics = metrics; hist[idx].status = 'approved'; saveHistory(clientId, hist); }
+  }
+  document.getElementById('perfWrap').classList.remove('open');
+  toast('📊 Results saved!');
+}
+
+/* ════════════════════════════════════════════
+   18. SCHEDULER
+═══════════════════════════════════════════════ */
+function copyForScheduler() {
+  const cap = GD.captions && GD.captions[SI] ? GD.captions[SI] : null;
+  if (!cap) { toast('Select a caption first.'); return; }
+  navigator.clipboard.writeText((cap.text + '\n\n' + cap.hashtags).trim()).then(() => toast('Copied for scheduler!'));
+}
+
+/* ════════════════════════════════════════════
+   19. CLIENT MESSAGE
+═══════════════════════════════════════════════ */
+function goMsg() {
+  if (SI < 0) { toast('Select a caption first.'); return; }
+  goP(4);
+  document.getElementById('cnWrap').style.display = 'block';
+  document.getElementById('msgSection').style.display = 'none';
+  const active = ACTIVE_CLIENT_ID ? loadClients().find(x => x.id === ACTIVE_CLIENT_ID) : null;
+  if (active && active.clientName) document.getElementById('cnInp').value = active.clientName;
+  setTimeout(() => document.getElementById('cnInp').focus(), 380);
+}
+
+function resetCN() {
+  document.getElementById('cnWrap').style.display = 'block';
+  document.getElementById('msgSection').style.display = 'none';
+  document.getElementById('cnInp').value = '';
+}
+
+async function buildMsg() {
+  const cn = document.getElementById('cnInp').value.trim();
+  if (!cn) { toast('Enter the client\'s name.'); return; }
+  const cap = GD.captions && GD.captions[SI] ? GD.captions[SI] : null;
+  if (!cap) { toast('No caption selected.'); return; }
+  const msgLang = document.getElementById('msgLang').value || 'English';
+
+  if (ACTIVE_CLIENT_ID) {
+    const clients = loadClients();
+    const idx = clients.findIndex(x => x.id === ACTIVE_CLIENT_ID);
+    if (idx >= 0) { clients[idx].clientName = cn; saveClients(clients); renderClientGrid(); }
+  } else if (document.getElementById('saveToggle').checked) { saveCurrentClient(); }
+
+  document.getElementById('cnWrap').style.display = 'none';
+
+  const inLang = msgLang === 'English' ? '' : `Write the ENTIRE message in ${msgLang}. Use appropriate greeting and sign-off conventions for ${msgLang}-speaking audiences.`;
+  const sys2 = `You are a professional social media agency account manager. Write a warm, confident, personalised client approval message. ${inLang} Respond ONLY in JSON:
+{"greeting":"Opening greeting","intro":"1-2 sentences introducing what they are reviewing","caption_intro":"1 sentence presenting the caption","rationale":"3-4 sentences explaining WHY — be specific and persuasive","cta":"1-2 sentences asking for approval or feedback","sign_off":"Warm professional closing"}`;
+
+  let mp = { greeting: `Dear ${cn},`, intro: 'Please find below the caption we\'ve prepared for your upcoming post.', caption_intro: 'After thorough research, here is our recommendation:', rationale: cap.why_it_works || '', cta: 'Please let us know if you\'d like to proceed or have any feedback.', sign_off: 'Warm regards,\nBroomstick' };
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 800, system: sys2,
+        messages: [{ role: 'user', content: `Client: ${cn}\nBrand: ${SN.brand || 'the brand'}\nPlatforms: ${(SN.platforms || []).join(', ')}\nGoal: ${SN.goal}\nStrategy: ${cap.strategy}\nCaption: ${cap.text}\nHashtags: ${cap.hashtags}\nWhy it works: ${cap.why_it_works}\nEngagement: ${cap.est_engagement}\nConfidence: ${cap.confidence}\nBest for: ${cap.best_for}\nAvoided: ${(SN.dislikes || []).join(', ') || 'None'}` }]
+      })
+    });
+    const rd = await r.json();
+    mp = JSON.parse(rd.content.map(b => b.text || '').join('').replace(/```json|```/g, '').trim());
+  } catch (e) { /* use fallback mp */ }
+
+  const links = cap.research_links || [];
+  const dislikesHtml = (SN.dislikes && SN.dislikes.length)
+    ? `<div style="margin:13px 0;padding:12px 14px;border-radius:11px;background:rgba(255,59,48,0.05);border:1px solid rgba(255,59,48,0.15);font-size:12px;color:var(--text2);line-height:1.65;"><span style="font-weight:700;color:#FF3B30;">🚫 What we carefully avoided: </span>${SN.dislikes.join(' · ')}</div>` : '';
+  const linksHtml = links.length
+    ? `<div class="msg-links"><div class="ml-title">Research & Supporting Data</div>${links.map(l => `<div class="ml-item"><div class="ml-ic">📊</div><div><div class="ml-lbl">${l.label}</div><a class="ml-url" href="${l.url}" target="_blank">${l.url}</a><div class="ml-desc">${l.desc || ''}</div></div></div>`).join('')}</div>` : '';
+  const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const isRTL = msgLang === 'Arabic';
+
+  document.getElementById('msgCard').innerHTML = `
+    <div class="msg-hd">
+      <div class="msg-hd-ey">Caption Approval Request · ${date}</div>
+      <div class="msg-hd-t">Caption Proposal for ${cn}</div>
+      <div class="msg-hd-s">${SN.brand || 'Brand'} · ${(SN.platforms || []).join(', ')}</div>
+    </div>
+    <div class="msg-bd" ${isRTL ? 'dir="rtl" style="text-align:right;"' : ''}>
+      <div class="msg-txt">${mp.greeting}\n\n${mp.intro}\n\n${mp.caption_intro}</div>
+      <div class="msg-cap-blk" ${isRTL ? 'dir="ltr" style="text-align:left;"' : ''}>${cap.text}<div class="msg-hash">${cap.hashtags}</div></div>
+      <div class="msg-rat">
+        <strong>Why we chose this: </strong>${mp.rationale}
+        <div class="rat-stats">
+          <div class="rs-item"><span>${cap.est_engagement}</span><span>Est. engagement lift</span></div>
+          <div class="rs-item"><span>${cap.confidence}</span><span>AI confidence</span></div>
+          <div class="rs-item"><span>${cap.best_for}</span><span>Optimised for</span></div>
+        </div>
+      </div>
+      ${dislikesHtml}${linksHtml}
+      <div class="msg-txt" style="margin-top:14px;">${mp.cta}\n\n${mp.sign_off}</div>
+    </div>
+    <div class="msg-ft">Generated by Broomstick · Powered by Claude AI</div>`;
+
+  document.getElementById('msgSection').style.display = 'block';
+  document.getElementById('statusSelect').value = 'pending';
+  window.scrollTo({ top: document.getElementById('tool').offsetTop - 65, behavior: 'smooth' });
+}
+
+function copyMsg() {
+  const cap = GD.captions && GD.captions[SI] ? GD.captions[SI] : null;
+  if (!cap) { toast('No caption to copy.'); return; }
+  const cn = document.getElementById('cnInp').value.trim() || 'Client';
+  const links = (cap.research_links || []).map(l => `  • ${l.label}: ${l.url}`).join('\n');
+  const t = `CAPTION APPROVAL — ${SN.brand || 'Brand'}\n${new Date().toLocaleDateString()}\n\nTo: ${cn}\n\n---\n${cap.text}\n\n${cap.hashtags}\n---\n\nWHY WE CHOSE THIS:\n${cap.why_it_works}\n\nEngagement: ${cap.est_engagement} | Confidence: ${cap.confidence} | Best For: ${cap.best_for}\n\nRESEARCH:\n${links || '(see web version)'}\n\nPlease review and let us know if you approve.\n\nWarm regards,\nBroomstick Team`;
+  navigator.clipboard.writeText(t).then(() => toast('Copied!'));
+}
+
+/* ════════════════════════════════════════════
+   20. INIT
+═══════════════════════════════════════════════ */
+// Wire data-preset attrs on dislike chips
+document.querySelectorAll('.dislike-chip[onclick]').forEach(el => {
+  const m = el.getAttribute('onclick').match(/togD\(this,'(.+?)'\)/);
+  if (m) el.dataset.preset = m[1];
+});
+
+// Close team modal on backdrop click
+document.getElementById('teamModal').addEventListener('click', function (e) {
+  if (e.target === this) closeTeamPanel();
+});
+
+// Update nav team button if workspace active
+if (WORKSPACE_KEY) {
+  const teamBtn = document.querySelector('button[onclick="openTeamPanel()"]');
+  if (teamBtn) teamBtn.textContent = '👥 ' + WORKSPACE_KEY;
+}
+
+// Initial render
+renderClientGrid();
+</script>
+</body>
+</html>
